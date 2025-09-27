@@ -1,0 +1,278 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Components;
+
+use Livewire\Component;
+use App\Models\Product;
+use App\Models\Category;
+
+class FeaturedProducts extends Component
+{
+    public $products;
+    public string $searchTerm = '';
+    public string $selectedCategory = '';
+    public string $priceRange = '';
+    public string $sortBy = 'name';
+    public $categories;
+    
+    // Modal properties
+    public $showModal = false;
+    public $selectedProduct = null;
+    public $selectedVariants = [];
+    public $currentImages = [];
+    public $mainImageIndex = 0;
+
+    public function mount(): void
+    {
+        $this->categories = Category::where('is_active', true)->get();
+        $this->loadProducts();
+    }
+
+    private function loadProducts(): void
+    {
+        $query = Product::with(['category', 'brand'])
+            ->where('is_active', true)
+            ->where('is_featured', true);
+
+        // Apply search filter
+        if (!empty($this->searchTerm)) {
+            $query->where('name', 'like', '%' . $this->searchTerm . '%');
+        }
+
+        // Apply category filter
+        if (!empty($this->selectedCategory)) {
+            $query->where('category_id', $this->selectedCategory);
+        }
+
+        // Apply price range filter
+        if (!empty($this->priceRange)) {
+            switch ($this->priceRange) {
+                case 'under-200000':
+                    $query->where('price', '<', 200000);
+                    break;
+                case '200000-500000':
+                    $query->whereBetween('price', [200000, 500000]);
+                    break;
+                case '500000-1000000':
+                    $query->whereBetween('price', [500000, 1000000]);
+                    break;
+                case 'over-1000000':
+                    $query->where('price', '>', 1000000);
+                    break;
+            }
+        }
+
+        // Apply sorting
+        switch ($this->sortBy) {
+            case 'price-low':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price-high':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'rating':
+                $query->orderBy('rating_average', 'desc');
+                break;
+            case 'name':
+            default:
+                $query->orderBy('name', 'asc');
+                break;
+        }
+
+        $this->products = $query->take(8)->get();
+    }
+
+    public function updatedSearchTerm()
+    {
+        $this->loadProducts();
+    }
+
+    public function updatedSelectedCategory()
+    {
+        $this->loadProducts();
+    }
+
+    public function updatedPriceRange()
+    {
+        $this->loadProducts();
+    }
+
+    public function updatedSortBy()
+    {
+        $this->loadProducts();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->searchTerm = '';
+        $this->selectedCategory = '';
+        $this->priceRange = '';
+        $this->sortBy = 'name';
+        $this->loadProducts();
+    }
+
+    public function addToCart(int $productId): void
+    {
+        try {
+            $product = Product::findOrFail($productId);
+            
+            // Dispatch para o componente ShoppingCart
+            $this->dispatch('add-to-cart', $productId);
+            
+            // Dispatch global para atualizar o carrinho do header
+            $this->dispatch('cart-item-added', [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->sale_price ?? $product->price,
+                'sale_price' => $product->sale_price,
+                'quantity' => 1,
+                'image_url' => $product->featured_image,
+                'sku' => $product->sku
+            ]);
+            
+        } catch (\Exception $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => 'Erro ao adicionar produto ao carrinho'
+            ]);
+        }
+    }
+
+    public function viewProduct(int $productId): void
+    {
+        $this->selectedProduct = Product::with(['category', 'brand', 'variants'])->findOrFail($productId);
+        $this->loadProductImages();
+        $this->showModal = true;
+    }
+    
+    public function closeModal(): void
+    {
+        $this->showModal = false;
+        $this->selectedProduct = null;
+        $this->selectedVariants = [];
+        $this->currentImages = [];
+        $this->mainImageIndex = 0;
+    }
+
+    public function selectVariant(string $variantName, int $variantId): void
+    {
+        $this->selectedVariants[$variantName] = $variantId;
+        
+        // Se for uma cor, atualizar as imagens
+        if ($variantName === 'Cor') {
+            $this->loadVariantImages($variantId);
+        }
+    }
+
+    public function loadProductImages(): void
+    {
+        if (!$this->selectedProduct) {
+            return;
+        }
+
+        // Começar com a imagem featured
+        $this->currentImages = [];
+        if ($this->selectedProduct->featured_image) {
+            $this->currentImages[] = $this->selectedProduct->featured_image;
+        }
+
+        // Adicionar outras imagens da galeria
+        if ($this->selectedProduct->images) {
+            $images = json_decode($this->selectedProduct->images, true);
+            if (is_array($images)) {
+                foreach ($images as $image) {
+                    if (!in_array($image, $this->currentImages)) {
+                        $this->currentImages[] = $image;
+                    }
+                }
+            }
+        }
+
+        $this->mainImageIndex = 0;
+    }
+
+    public function loadVariantImages(int $variantId): void
+    {
+        if (!$this->selectedProduct || !$this->selectedProduct->variant_images) {
+            return;
+        }
+
+        $variant = $this->selectedProduct->variants->where('id', $variantId)->first();
+        if (!$variant) {
+            return;
+        }
+
+        $variantImages = json_decode($this->selectedProduct->variant_images, true);
+        if (is_array($variantImages) && isset($variantImages[$variant->value])) {
+            $this->currentImages = $variantImages[$variant->value];
+            $this->mainImageIndex = 0;
+        }
+    }
+
+    public function setMainImage(int $index): void
+    {
+        if ($index >= 0 && $index < count($this->currentImages)) {
+            $this->mainImageIndex = $index;
+        }
+    }
+
+    public function getFinalPriceProperty(): float
+    {
+        if (!$this->selectedProduct) {
+            return 0;
+        }
+
+        $basePrice = $this->selectedProduct->sale_price ?? $this->selectedProduct->price;
+        $adjustment = 0;
+
+        // Calcular ajustes de preço das variantes selecionadas
+        foreach ($this->selectedVariants as $variantName => $variantId) {
+            $variant = $this->selectedProduct->variants->where('id', $variantId)->first();
+            if ($variant) {
+                $adjustment += $variant->price_adjustment;
+            }
+        }
+
+        return $basePrice + $adjustment;
+    }
+
+    public function toggleWishlist(int $productId): void
+    {
+        $product = Product::findOrFail($productId);
+        $wishlist = session()->get('wishlist', []);
+        
+        if (in_array($productId, $wishlist)) {
+            // Remover da lista
+            $wishlist = array_diff($wishlist, [$productId]);
+            session()->put('wishlist', $wishlist);
+            
+            $this->dispatch('wishlist-item-removed', ['id' => $productId]);
+        } else {
+            // Adicionar à lista
+            $wishlist[] = $productId;
+            session()->put('wishlist', $wishlist);
+            
+            $this->dispatch('wishlist-item-added', [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'sale_price' => $product->sale_price,
+                'image' => $product->featured_image,
+                'category' => $product->category->name ?? null
+            ]);
+        }
+    }
+
+    public function isInWishlist(int $productId): bool
+    {
+        $wishlist = session()->get('wishlist', []);
+        return in_array($productId, $wishlist);
+    }
+
+    public function render()
+    {
+        return view('livewire.components.featured-products');
+    }
+}
