@@ -44,6 +44,15 @@
                 <a href="{{ route('brands') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('brands') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
                     🏷️ Marcas
                 </a>
+                <a href="{{ route('about') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('about') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
+                    🏢 Sobre
+                </a>
+                <a href="{{ route('contact') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('contact') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
+                    📞 Contacto
+                </a>
+                <a href="{{ route('faq') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('faq') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
+                    ❓ FAQ
+                </a>
             </nav>
 
             <!-- Right Actions -->

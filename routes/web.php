@@ -182,22 +182,30 @@ Route::prefix('api/cart')->group(function () {
 });
 
 // Laravel Auth Routes (adicionadas pelo Laravel UI)
-Auth::routes();
 
 // Dashboard routes
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('user.dashboard.home');
 
 // Missing routes for footer/header links
-Route::get('/contact', function () {
-    return view('contact');
-})->name('contact');
+// Auctions page
+Route::get('/auctions', function () {
+    return view('auctions');
+})->name('auctions');
+
+// Contact page
+Route::get('/contacto', \App\Livewire\Pages\Contact::class)->name('contact');
+
+// About page
+Route::get('/sobre', \App\Livewire\Pages\About::class)->name('about');
+
+// FAQ page
+Route::get('/faq', \App\Livewire\Pages\Faq::class)->name('faq');
 
 Route::get('/request/product', function () {
     return view('request-product');
 })->name('request.product');
 
-// Checkout Route (requires authentication)
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', \App\Livewire\Pages\Checkout::class)->name('checkout');
 });
