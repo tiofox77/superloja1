@@ -119,8 +119,8 @@ class OrderExportController extends Controller
                 $order->user->email ?? 'N/A',
                 $order->status,
                 $order->payment_status,
-                number_format($order->subtotal, 2, ',', '.'),
-                number_format($order->total_amount, 2, ',', '.'),
+                number_format((float)$order->subtotal, 2, ',', '.'),
+                number_format((float)$order->total_amount, 2, ',', '.'),
                 $order->created_at->format('d/m/Y H:i')
             );
         }

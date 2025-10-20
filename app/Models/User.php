@@ -38,6 +38,7 @@ class User extends Authenticatable
         'avatar',
         'bio',
         'role',
+        'is_admin',
         'is_active',
         'preferences',
         'newsletter_subscribed',
@@ -68,6 +69,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'birth_date' => 'date',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
             'is_active' => 'boolean',
             'newsletter_subscribed' => 'boolean',
             'sms_notifications' => 'boolean',
@@ -117,6 +119,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the notifications for the user.
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get unread notifications for the user.
+     */
+    public function unreadNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->whereNull('read_at');
+    }
+
+    /**
      * Get only active users.
      */
     public function scopeActive($query)
@@ -145,7 +163,7 @@ class User extends Authenticatable
      */
     public function scopeAdmins($query)
     {
-        return $query->whereIn('role', ['admin', 'manager']);
+        return $query->where('is_admin', true);
     }
 
     /**
@@ -153,7 +171,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return in_array($this->role, ['admin', 'manager']);
+        return $this->is_admin;
     }
 
     /**

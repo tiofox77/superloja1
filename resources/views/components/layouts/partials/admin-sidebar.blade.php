@@ -19,7 +19,7 @@
     </div>
     
     <!-- Navigation Menu -->
-    <nav class="flex-1 px-3 py-6 space-y-2 custom-scrollbar overflow-y-auto">
+    <nav id="admin-sidebar-nav" class="flex-1 px-3 py-6 space-y-2 custom-scrollbar overflow-y-auto" style="scroll-behavior: smooth;">
         
         <!-- Dashboard -->
         <a href="{{ route('admin.dashboard') }}" 
@@ -261,36 +261,184 @@
             </a>
         </div>
 
+        <!-- AI Agent Section -->
+        <div class="space-y-3 pt-4">
+            <div class="flex items-center px-4 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">
+                <div class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center mr-3">
+                    <svg class="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                AI Agent 🤖
+            </div>
+            
+            <!-- AI Agent Dashboard -->
+            <a href="{{ route('admin.ai-agent.dashboard') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.dashboard') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.dashboard') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">🤖</span>
+                </div>
+                <span class="font-medium flex-1">Dashboard</span>
+                @if(request()->routeIs('admin.ai-agent.dashboard'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+
+            <!-- Product Insights -->
+            <a href="{{ route('admin.ai-agent.insights') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.insights') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.insights') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">📊</span>
+                </div>
+                <span class="font-medium flex-1">Insights Produtos</span>
+                @if(request()->routeIs('admin.ai-agent.insights'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+
+            <!-- Conversations -->
+            <a href="{{ route('admin.ai-agent.conversations') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.conversations') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.conversations') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">💬</span>
+                </div>
+                <span class="font-medium flex-1">Conversas</span>
+                @php
+                    $urgentConversations = \App\Models\AiSentimentAnalysis::needsAttention()
+                        ->whereHas('conversation', fn($q) => $q->where('status', 'active'))
+                        ->distinct('conversation_id')
+                        ->count('conversation_id');
+                    $unreadMessages = \App\Models\AiMessage::where('is_read', false)->where('direction', 'incoming')->count();
+                @endphp
+                @if($urgentConversations > 0)
+                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse mr-1" title="Conversas urgentes">
+                        🚨 {{ $urgentConversations }}
+                    </span>
+                @endif
+                @if($unreadMessages > 0)
+                    <span class="bg-blue-500 text-white text-xs font-medium px-2 py-0.5 rounded-full" title="Mensagens não lidas">
+                        {{ $unreadMessages }}
+                    </span>
+                @endif
+            </a>
+
+            <!-- Auto Posts -->
+            <a href="{{ route('admin.ai-agent.posts') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.posts') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.posts') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">📱</span>
+                </div>
+                <span class="font-medium flex-1">Posts Automáticos</span>
+                @if(request()->routeIs('admin.ai-agent.posts'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+
+            <!-- Knowledge Center -->
+            <a href="{{ route('admin.ai-agent.knowledge') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.knowledge') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.knowledge') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">🧠</span>
+                </div>
+                <span class="font-medium flex-1">Centro de Conhecimento</span>
+                @if(request()->routeIs('admin.ai-agent.knowledge'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+
+            <!-- Notification Channels -->
+            <a href="{{ route('admin.ai-agent.notifications') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.notifications') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.notifications') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">🔔</span>
+                </div>
+                <span class="font-medium flex-1">Canais de Notificação</span>
+                @if(request()->routeIs('admin.ai-agent.notifications'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+
+            <!-- AI Agent Settings -->
+            <a href="{{ route('admin.ai-agent.settings') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.settings') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.settings') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">⚙️</span>
+                </div>
+                <span class="font-medium flex-1">Configurações AI</span>
+                @if(request()->routeIs('admin.ai-agent.settings'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+        </div>
+
         <!-- Configurações Section -->
-        <div class="space-y-1 pt-4">
-            <div class="flex items-center px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <svg class="mr-2 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
+        <div class="space-y-3 pt-4">
+            <div class="flex items-center px-4 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">
+                <div class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center mr-3">
+                    <svg class="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
                 Sistema
             </div>
             
-            <!-- Analytics -->
-            <a href="#" 
-               class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 menu-item text-gray-700 hover:bg-gray-100">
-                <svg class="flex-shrink-0 mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" 
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                Analytics
-                <span class="ml-auto text-xs text-gray-400">Em breve</span>
+            <!-- SMS Manager -->
+            <a href="{{ route('admin.sms.index') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.sms.*') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.sms.*') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <svg class="h-5 w-5 {{ request()->routeIs('admin.sms.*') ? 'text-purple-600' : 'text-white' }}" 
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                </div>
+                <span class="font-medium flex-1">📱 SMS</span>
+                @if(request()->routeIs('admin.sms.*'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
             </a>
             
             <!-- Settings -->
+            <a href="{{ route('admin.settings.index') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.settings.*') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.settings.*') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <svg class="h-5 w-5 {{ request()->routeIs('admin.settings.*') ? 'text-purple-600' : 'text-white' }}" 
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <span class="font-medium flex-1">⚙️ Configurações</span>
+                @if(request()->routeIs('admin.settings.*'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+            
+            <!-- System Update -->
+            <a href="{{ route('admin.system.update') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.system.update') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.system.update') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <svg class="h-5 w-5 {{ request()->routeIs('admin.system.update') ? 'text-purple-600' : 'text-white' }}" 
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </div>
+                <span class="font-medium flex-1">🔄 Atualizar Sistema</span>
+                @if(request()->routeIs('admin.system.update'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+            
+            <!-- Analytics -->
             <a href="#" 
-               class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 menu-item text-gray-700 hover:bg-gray-100">
-                <svg class="flex-shrink-0 mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" 
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                Configurações
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 nav-item-3d text-white hover:text-white opacity-60">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl bg-white/20 mr-3">
+                    <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <span class="font-medium flex-1">📊 Analytics</span>
+                <span class="text-xs text-white/60">Em breve</span>
             </a>
         </div>
         
@@ -316,3 +464,49 @@
         </div>
     </div>
 </div>
+
+<!-- Script para manter posição do scroll do sidebar -->
+<script>
+(function() {
+    const sidebar = document.getElementById('admin-sidebar-nav');
+    const STORAGE_KEY = 'admin_sidebar_scroll_position';
+    
+    if (!sidebar) return;
+    
+    // Restaurar posição salva
+    function restoreScrollPosition() {
+        const savedPosition = localStorage.getItem(STORAGE_KEY);
+        if (savedPosition) {
+            sidebar.scrollTop = parseInt(savedPosition, 10);
+        }
+    }
+    
+    // Salvar posição atual
+    function saveScrollPosition() {
+        localStorage.setItem(STORAGE_KEY, sidebar.scrollTop);
+    }
+    
+    // Ao carregar página - restaura posição
+    window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(restoreScrollPosition, 100);
+    });
+    
+    // Salvar quando usuário rola
+    let scrollTimeout;
+    sidebar.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(saveScrollPosition, 150);
+    });
+    
+    // Salvar ao clicar em qualquer link
+    const sidebarLinks = sidebar.querySelectorAll('a');
+    sidebarLinks.forEach(function(link) {
+        link.addEventListener('click', saveScrollPosition);
+    });
+    
+    // Também funciona com Livewire
+    document.addEventListener('livewire:navigated', function() {
+        setTimeout(restoreScrollPosition, 100);
+    });
+})();
+</script>

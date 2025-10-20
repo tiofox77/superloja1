@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Orders;
 
 use App\Models\Order;
 use App\Models\User;
+use App\Services\SmsService;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -312,6 +313,9 @@ class OrderManager extends Component
             'cancelled' => 'cancelado'
         ];
 
+        // Armazenar status anterior para comparação
+        $previousStatus = $order->status;
+        
         $order->update(['status' => $status]);
 
         if ($status === 'shipped') {
@@ -320,10 +324,40 @@ class OrderManager extends Component
             $order->update(['delivered_at' => now()]);
         }
 
+        // Enviar SMS se o status mudou
+        if ($previousStatus !== $status) {
+            $this->sendOrderStatusSms($order, $status);
+        }
+
         $this->dispatch('showAlert', [
             'type' => 'success',
             'message' => "Pedido #{$order->order_number} atualizado para: " . ($statusTranslations[$status] ?? $status)
         ]);
+    }
+
+    private function sendOrderStatusSms($order, $status)
+    {
+        try {
+            $smsService = new SmsService();
+            
+            switch ($status) {
+                case 'processing':
+                    $smsService->sendOrderConfirmedNotification($order);
+                    break;
+                case 'shipped':
+                    $smsService->sendOrderShippedNotification($order);
+                    break;
+                case 'delivered':
+                    $smsService->sendOrderDeliveredNotification($order);
+                    break;
+                case 'cancelled':
+                    $smsService->sendOrderCancelledNotification($order);
+                    break;
+            }
+        } catch (\Exception $e) {
+            // Log do erro mas não interromper o fluxo
+            \Log::error('Erro ao enviar SMS de status do pedido: ' . $e->getMessage());
+        }
     }
 
     public function updatePaymentStatus($orderId, $paymentStatus): void

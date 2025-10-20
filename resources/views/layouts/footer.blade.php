@@ -44,10 +44,11 @@
                 <ul class="space-y-2">
                     <li><a href="{{ route('home') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Início</a></li>
                     <li><a href="{{ route('products') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Produtos</a></li>
-                    <li><a href="{{ route('categories') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Categorias</a></li>
+                    <li><a href="{{ route('health.wellness') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">🍃 Saúde</a></li>
                     <li><a href="{{ route('offers') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Ofertas</a></li>
                     <li><a href="{{ route('auctions') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Leilões</a></li>
                     <li><a href="{{ route('brands') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Marcas</a></li>
+                    <li><a href="{{ route('about') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Sobre Nós</a></li>
                 </ul>
             </div>
 
@@ -56,11 +57,11 @@
                 <h3 class="text-lg font-semibold mb-4">Atendimento</h3>
                 <ul class="space-y-2">
                     <li><a href="{{ route('contact') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Contacto</a></li>
-                    <li><a href="#" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">FAQ</a></li>
-                    <li><a href="#" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Política de Privacidade</a></li>
-                    <li><a href="#" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Termos de Uso</a></li>
-                    <li><a href="#" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Política de Devolução</a></li>
-                    <li><a href="{{ route('request.product') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Solicitar Produto</a></li>
+                    <li><a href="{{ route('faq') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">FAQ</a></li>
+                    <li><a href="{{ route('privacy-policy') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Política de Privacidade</a></li>
+                    <li><a href="{{ route('terms-of-service') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Termos de Uso</a></li>
+                    <li><a href="{{ route('return-policy') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Política de Devolução</a></li>
+                    <li><a href="{{ route('product-request') }}" class="text-gray-300 hover:text-orange-500 transition-colors duration-200">Solicitar Produto</a></li>
                 </ul>
             </div>
         </div>
@@ -75,7 +76,7 @@
                     </svg>
                     <div>
                         <p class="text-gray-300">Luanda, Angola</p>
-                        <p class="text-sm text-gray-400">Rua da Missão, Ingombota</p>
+                        <p class="text-sm text-gray-400">Kilamba J13</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -83,8 +84,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                     </svg>
                     <div>
-                        <p class="text-gray-300">+244 900 000 000</p>
-                        <p class="text-sm text-gray-400">Segunda a Sexta, 8h às 18h</p>
+                        <p class="text-gray-300">+244 939 729 902</p>
+                        <p class="text-sm text-gray-400">WhatsApp ativo</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">

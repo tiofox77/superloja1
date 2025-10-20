@@ -215,6 +215,16 @@ class ProductsPage extends Component
         $query = Product::with(['category', 'brand', 'variants'])
             ->where('is_active', true);
 
+        // Excluir produtos da categoria "Saúde e Bem-estar" e suas subcategorias
+        $healthCategory = Category::where('name', 'Saúde e Bem-estar')->first();
+        if ($healthCategory) {
+            $healthCategoryIds = [$healthCategory->id];
+            $healthSubcategoryIds = Category::where('parent_id', $healthCategory->id)->pluck('id')->toArray();
+            $excludeIds = array_merge($healthCategoryIds, $healthSubcategoryIds);
+            
+            $query->whereNotIn('category_id', $excludeIds);
+        }
+
         // Apply filters
         if ($this->selectedCategory) {
             $query->where('category_id', $this->selectedCategory);
@@ -246,7 +256,19 @@ class ProductsPage extends Component
 
     public function getCategoriesProperty()
     {
-        return Category::where('is_active', true)->orderBy('name')->get();
+        // Excluir categoria "Saúde e Bem-estar" e suas subcategorias dos filtros
+        $healthCategory = Category::where('name', 'Saúde e Bem-estar')->first();
+        $query = Category::where('is_active', true);
+        
+        if ($healthCategory) {
+            $healthCategoryIds = [$healthCategory->id];
+            $healthSubcategoryIds = Category::where('parent_id', $healthCategory->id)->pluck('id')->toArray();
+            $excludeIds = array_merge($healthCategoryIds, $healthSubcategoryIds);
+            
+            $query->whereNotIn('id', $excludeIds);
+        }
+        
+        return $query->orderBy('name')->get();
     }
 
     public function getBrandsProperty()

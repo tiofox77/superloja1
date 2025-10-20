@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'unimtx' => [
+        'api_url' => env('UNIMTX_API_URL', 'https://api.unimtx.com/v1/messages'),
+        'api_key' => env('UNIMTX_API_KEY'),
+        'signature' => env('UNIMTX_SIGNATURE', 'SuperLoja'),
+    ],
+
 ];

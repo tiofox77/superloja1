@@ -109,6 +109,16 @@ class Product extends Model
         return $this->hasMany(ProductRequest::class, 'matched_product_id');
     }
 
+    public function insights(): HasMany
+    {
+        return $this->hasMany(AiProductInsight::class);
+    }
+
+    public function latestInsight()
+    {
+        return $this->hasOne(AiProductInsight::class)->latest('analysis_date');
+    }
+
     /**
      * Get only active products.
      */

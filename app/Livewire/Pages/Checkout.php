@@ -7,6 +7,7 @@ use Livewire\WithFileUploads;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\SmsService;
 use Illuminate\Support\Facades\Storage;
 
 class Checkout extends Component
@@ -177,6 +178,9 @@ class Checkout extends Component
                 }
             }
 
+            // Enviar SMS de confirmação do pedido
+            $this->sendOrderCreatedSms($order);
+
             // Limpar sessões
             session()->forget(['checkout.items', 'checkout.total']);
             session()->forget('cart.items'); // Limpar carrinho também
@@ -202,6 +206,17 @@ class Checkout extends Component
                 'type' => 'error', 
                 'message' => 'Erro ao processar pedido: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    private function sendOrderCreatedSms($order)
+    {
+        try {
+            $smsService = new SmsService();
+            $smsService->sendOrderCreatedNotification($order);
+        } catch (\Exception $e) {
+            // Log do erro mas não interromper o fluxo do checkout
+            \Log::error('Erro ao enviar SMS de pedido criado: ' . $e->getMessage());
         }
     }
 

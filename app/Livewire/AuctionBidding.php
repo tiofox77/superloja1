@@ -85,7 +85,7 @@ class AuctionBidding extends Component
         ], [
             'bidAmount.required' => 'Por favor, insira o valor do seu lance',
             'bidAmount.numeric' => 'O valor deve ser um número válido',
-            'bidAmount.min' => 'Seu lance deve ser de pelo menos ' . number_format($this->minBidAmount, 0, ',', '.') . ' Kz'
+            'bidAmount.min' => 'Seu lance deve ser de pelo menos ' . number_format((float)$this->minBidAmount, 0, ',', '.') . ' Kz'
         ]);
 
         try {

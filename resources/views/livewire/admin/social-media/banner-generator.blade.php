@@ -14,30 +14,40 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Configuration Panel -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="space-y-6">
             <!-- Banner Type & Size -->
             <div class="card-3d p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Configurações Básicas</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-4">⚙️ Configurações Rápidas</h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Banner</label>
-                        <select wire:model.live="bannerType" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            @foreach($bannerTypes as $key => $name)
-                                <option value="{{ $key }}">{{ $name }}</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tamanho</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button wire:click="$set('bannerSize', 'facebook_post')" 
+                                    class="btn-3d {{ $bannerSize === 'facebook_post' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700' }} py-2">
+                                📘 Facebook
+                            </button>
+                            <button wire:click="$set('bannerSize', 'instagram_post')" 
+                                    class="btn-3d {{ $bannerSize === 'instagram_post' ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-700' }} py-2">
+                                📷 Instagram
+                            </button>
+                        </div>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tamanho</label>
-                        <select wire:model.live="bannerSize" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            @foreach($bannerSizes as $key => $size)
-                                <option value="{{ $key }}">{{ $size['name'] }} ({{ $size['width'] }}x{{ $size['height'] }})</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Template</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button wire:click="$set('template', 'card')" 
+                                    class="btn-3d {{ $template === 'card' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700' }} py-2">
+                                🎴 Card
+                            </button>
+                            <button wire:click="$set('template', 'modern')" 
+                                    class="btn-3d {{ $template === 'modern' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700' }} py-2">
+                                ✨ Moderno
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -73,94 +83,31 @@
                 </div>
             </div>
 
-            <!-- Design Settings -->
+            <!-- Design Settings - SIMPLIFICADO -->
             <div class="card-3d p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Design</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-4">🎨 Cores</h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Template</label>
-                        <select wire:model.live="template" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            @foreach($templates as $key => $name)
-                                <option value="{{ $key }}">{{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Fonte</label>
-                        <select wire:model.live="fontFamily" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            @foreach($fonts as $key => $name)
-                                <option value="{{ $key }}">{{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Cor de Fundo</label>
                         <input type="color" 
                                wire:model.live="backgroundColor"
-                               class="w-full h-10 border border-gray-300 rounded-lg">
+                               class="w-full h-12 border border-gray-300 rounded-lg cursor-pointer">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Cor do Texto</label>
-                        <input type="color" 
-                               wire:model.live="textColor"
-                               class="w-full h-10 border border-gray-300 rounded-lg">
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Imagem de Fundo</label>
-                    <input type="file" 
-                           wire:model="backgroundImage"
-                           accept="image/*"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                    @if($backgroundImage)
-                        <p class="text-sm text-green-600 mt-1">✓ Imagem carregada</p>
-                    @endif
-                </div>
-
-                @if($backgroundImage)
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Opacidade do Overlay (%)</label>
-                        <input type="range" 
-                               wire:model.live="overlayOpacity"
-                               min="0" max="100"
-                               class="w-full">
-                        <div class="text-center text-sm text-gray-600">{{ $overlayOpacity }}%</div>
-                    </div>
-                @endif
-
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Posição do Logo</label>
-                        <select wire:model.live="logoPosition" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            <option value="top-left">Superior Esquerda</option>
-                            <option value="top-right">Superior Direita</option>
-                            <option value="bottom-left">Inferior Esquerda</option>
-                            <option value="bottom-right">Inferior Direita</option>
-                        </select>
-                    </div>
-                    
-                    <div class="space-y-2">
-                        <div class="flex items-center">
-                            <input type="checkbox" wire:model.live="showPrices" id="showPrices" class="checkbox-modern">
-                            <label for="showPrices" class="ml-2 text-sm text-gray-700">Mostrar preços</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" wire:model.live="showDiscount" id="showDiscount" class="checkbox-modern">
-                            <label for="showDiscount" class="ml-2 text-sm text-gray-700">Mostrar desconto</label>
-                        </div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">URL/Logo</label>
+                        <input type="text" 
+                               wire:model.live="logoUrl"
+                               placeholder="superloja.vip"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2">
                     </div>
                 </div>
             </div>
 
             <!-- Product Selection -->
-            @if($bannerType !== 'custom' && $bannerType !== 'brand_awareness')
-                <div class="card-3d p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Seleção de Produtos</h3>
+            <div class="card-3d p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">🛍️ Produtos no Banner</h3>
                     
                     <!-- Quick Selection -->
                     <div class="mb-4">
@@ -178,8 +125,8 @@
                     <!-- Selected Products -->
                     @if(!empty($selectedProducts))
                         <div class="mb-4">
-                            <h4 class="font-medium text-gray-700 mb-2">Produtos Selecionados ({{ count($selectedProducts) }})</h4>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <h4 class="font-medium text-green-700 mb-2">✓ {{ count($selectedProducts) }} produto(s) selecionado(s)</h4>
+                            <div class="grid grid-cols-2 gap-3">
                                 @foreach($products->whereIn('id', $selectedProducts)->take(4) as $product)
                                     <div class="relative border border-gray-200 rounded-lg p-2">
                                         <button wire:click="removeProduct({{ $product->id }})"
@@ -200,8 +147,8 @@
                     @endif
 
                     <!-- Product Grid -->
-                    <div class="max-h-64 overflow-y-auto">
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div class="max-h-80 overflow-y-auto">
+                        <div class="grid grid-cols-2 gap-3">
                             @foreach($products->take(20) as $product)
                                 <div class="border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-500 transition-colors {{ in_array($product->id, $selectedProducts) ? 'border-blue-500 bg-blue-50' : '' }}"
                                      wire:click="addProduct({{ $product->id }})">
@@ -224,20 +171,20 @@
                         </div>
                     </div>
                 </div>
-            @endif
+            </div>
         </div>
 
         <!-- Preview Panel -->
         <div class="space-y-6">
             <!-- Preview -->
             <div class="card-3d p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Preview</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-4">👁️ Preview</h3>
                 
                 @if($showPreview && $previewUrl)
                     <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        <img src="{{ $previewUrl }}" 
+                        <img src="{{ $previewUrl }}?t={{ time() }}" 
                              alt="Banner Preview"
-                             class="w-full rounded-lg shadow-md">
+                             class="w-full rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
                     </div>
                 @else
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -256,33 +203,18 @@
 
             <!-- Actions -->
             <div class="card-3d p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Ações</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-4">🚀 Ações</h3>
                 
                 <div class="space-y-3">
                     <button wire:click="generatePreview" 
-                            class="w-full btn-3d bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                        Atualizar Preview
+                            class="w-full btn-3d bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 text-lg font-semibold">
+                        👁️ Gerar Preview
                     </button>
                     
                     @if($showPreview)
                         <button wire:click="downloadBanner" 
-                                class="w-full btn-3d bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Baixar Banner
-                        </button>
-                        
-                        <button onclick="shareToSocialMedia()" 
-                                class="w-full btn-3d bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
-                            </svg>
-                            Compartilhar
+                                class="w-full btn-3d bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 text-lg font-semibold">
+                            📥 Baixar Banner
                         </button>
                     @endif
                 </div>
@@ -290,24 +222,20 @@
 
             <!-- Banner Info -->
             <div class="card-3d p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Informações</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-4">ℹ️ Informações</h3>
                 
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Tipo:</span>
-                        <span class="font-medium">{{ $bannerTypes[$bannerType] }}</span>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between p-2 bg-gray-50 rounded">
+                        <span class="text-gray-600">📐 Dimensões:</span>
+                        <span class="font-bold text-blue-600">{{ $bannerSizes[$bannerSize]['width'] }}x{{ $bannerSizes[$bannerSize]['height'] }}px</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Tamanho:</span>
-                        <span class="font-medium">{{ $bannerSizes[$bannerSize]['width'] }}x{{ $bannerSizes[$bannerSize]['height'] }}</span>
+                    <div class="flex justify-between p-2 bg-gray-50 rounded">
+                        <span class="text-gray-600">🎨 Template:</span>
+                        <span class="font-bold text-purple-600">{{ $templates[$template] }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Template:</span>
-                        <span class="font-medium">{{ $templates[$template] }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Produtos:</span>
-                        <span class="font-medium">{{ count($selectedProducts) }}</span>
+                    <div class="flex justify-between p-2 bg-gray-50 rounded">
+                        <span class="text-gray-600">🛍️ Produtos:</span>
+                        <span class="font-bold text-green-600">{{ count($selectedProducts) }}</span>
                     </div>
                 </div>
             </div>

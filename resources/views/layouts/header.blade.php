@@ -29,8 +29,8 @@
                 <a href="{{ route('home') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('home') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
                     🏠 Início
                 </a>
-                <a href="{{ route('categories') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('categories') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
-                    📁 Categorias
+                <a href="{{ route('health.wellness.pt') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap {{ request()->routeIs(['health.wellness', 'health.wellness.pt']) ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
+                    🍃 Saúde
                 </a>
                 <a href="{{ route('products') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('products') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
                     📦 Produtos
@@ -41,31 +41,22 @@
                 <a href="{{ route('auctions') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('auctions') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
                     ⚡ Leilões
                 </a>
-                <a href="{{ route('brands') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('brands') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
-                    🏷️ Marcas
-                </a>
-                <a href="{{ route('about') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('about') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
-                    🏢 Sobre
-                </a>
-                <a href="{{ route('contact') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('contact') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
-                    📞 Contacto
-                </a>
-                <a href="{{ route('faq') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('faq') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
-                    ❓ FAQ
+                <a href="{{ route('product-request') }}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 {{ request()->routeIs('product-request') ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md' }}">
+                    🛒 Solicitar
                 </a>
             </nav>
 
             <!-- Right Actions -->
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 sm:space-x-4">
                 
                 <!-- Search -->
                 <div class="hidden md:block relative">
                     <div class="relative group">
                         <input type="text" 
                                placeholder="Buscar produtos..." 
-                               class="w-64 pl-12 pr-4 py-3 bg-gray-50/80 border-0 rounded-2xl focus:ring-2 focus:ring-orange-500/50 focus:bg-white text-sm placeholder-gray-500 transition-all duration-300">
-                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
-                            <svg class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               class="w-48 lg:w-64 pl-10 pr-4 py-2.5 bg-gray-50/80 border-0 rounded-2xl focus:ring-2 focus:ring-orange-500/50 focus:bg-white text-sm placeholder-gray-500 transition-all duration-300">
+                        <div class="absolute left-3 top-1/2 transform -translate-y-1/2">
+                            <svg class="w-4 h-4 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
@@ -73,33 +64,13 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-1 sm:space-x-2">
                     
                     <!-- Wishlist -->
                     @livewire('components.wishlist-header')
 
                     <!-- Notifications -->
-                    <button onclick="toggleNotifications()" class="relative p-3 text-gray-600 hover:text-blue-500 hover:bg-blue-50 rounded-2xl transition-all duration-300 group">
-                        <div class="relative">
-                            <svg class="w-6 h-6 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                            </svg>
-                            
-                            <!-- Bell ring animation -->
-                            <div class="absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-full animate-ping opacity-75"></div>
-                        </div>
-                        
-                        <!-- Notification Badge -->
-                        <span class="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md ring-2 ring-white">
-                            <span class="relative z-10">5</span>
-                        </span>
-                        
-                        <!-- Tooltip -->
-                        <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg">
-                            <span class="font-medium">Notificações</span>
-                            <div class="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                        </div>
-                    </button>
+                    @livewire('notification-dropdown')
 
                     <!-- Cart -->
                     @livewire('components.cart-header')

@@ -100,7 +100,7 @@
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Em breve!</h3>
                 <p class="text-gray-600 mb-6">Estamos a organizar os produtos desta categoria. Volte em breve!</p>
-                <a href="{{ route('request.product') }}" 
+                <a href="{{ route('product-request') }}" 
                    class="bg-green-500 text-white px-6 py-3 rounded-xl hover:bg-green-600 transition-colors inline-flex items-center font-semibold">
                     Solicitar Produto Específico
                     <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +118,7 @@
             <p class="text-xl text-green-100 mb-8">
                 Não encontrou o que procura? Solicite o produto e nós encontramos para si!
             </p>
-            <a href="{{ route('request.product') }}" 
+            <a href="{{ route('product-request') }}" 
                class="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center">
                 Solicitar Produto
                 <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
