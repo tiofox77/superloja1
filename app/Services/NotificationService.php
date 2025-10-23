@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Notification;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
@@ -43,8 +44,19 @@ class NotificationService
     ): void {
         $adminUsers = User::where('is_admin', true)->get();
 
+        Log::info('Criando notificações para admins', [
+            'type' => $type,
+            'total_admins' => $adminUsers->count(),
+            'admin_ids' => $adminUsers->pluck('id')->toArray()
+        ]);
+
+        if ($adminUsers->isEmpty()) {
+            Log::warning('Nenhum admin encontrado para notificar!');
+            return;
+        }
+
         foreach ($adminUsers as $admin) {
-            self::create(
+            $notification = self::create(
                 $admin->id,
                 $type,
                 $title,
@@ -53,6 +65,12 @@ class NotificationService
                 $relatedId,
                 $relatedType
             );
+            
+            Log::info('Notificação criada para admin', [
+                'admin_id' => $admin->id,
+                'admin_name' => $admin->name,
+                'notification_id' => $notification->id
+            ]);
         }
     }
 
@@ -251,7 +269,7 @@ class NotificationService
      * AI Agent - Conversa precisa atenção humana
      */
     public static function aiConversationNeedsAttention(
-        int $conversationId,
+        ?int $conversationId,
         string $customerName,
         string $platform,
         string $sentiment,

@@ -119,7 +119,11 @@ class ProductsPage extends Component
 
         // Adicionar outras imagens da galeria
         if ($this->selectedProduct->images) {
-            $images = json_decode($this->selectedProduct->images, true);
+            // O campo 'images' já é um array (cast no model)
+            $images = is_array($this->selectedProduct->images) 
+                ? $this->selectedProduct->images 
+                : json_decode($this->selectedProduct->images, true);
+            
             if (is_array($images)) {
                 foreach ($images as $image) {
                     if (!in_array($image, $this->currentImages)) {
@@ -143,7 +147,10 @@ class ProductsPage extends Component
             return;
         }
 
-        $variantImages = json_decode($this->selectedProduct->variant_images, true);
+        // O campo 'variant_images' pode ser array ou JSON string
+        $variantImages = is_array($this->selectedProduct->variant_images)
+            ? $this->selectedProduct->variant_images
+            : json_decode($this->selectedProduct->variant_images, true);
         if (is_array($variantImages) && isset($variantImages[$variant->value])) {
             $this->currentImages = $variantImages[$variant->value];
             $this->mainImageIndex = 0;

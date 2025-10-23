@@ -109,8 +109,8 @@ class AiAgentService
             ->whereIn('orders.status', ['confirmed', 'shipped', 'delivered'])
             ->selectRaw('
                 COUNT(*) as total_sales,
-                SUM(order_items.subtotal) as total_revenue,
-                AVG(order_items.price) as avg_price
+                SUM(order_items.total_price) as total_revenue,
+                AVG(order_items.unit_price) as avg_price
             ')
             ->first();
 

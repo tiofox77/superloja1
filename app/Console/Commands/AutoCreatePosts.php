@@ -9,6 +9,7 @@ use App\Services\SocialMediaAgentService;
 use App\Models\AiProductInsight;
 use App\Models\AiAutoPost;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
 
 class AutoCreatePosts extends Command
 {
@@ -61,6 +62,9 @@ class AutoCreatePosts extends Command
 
         // 3. Criar posts para cada produto
         $created = 0;
+        $createdPostIds = [];
+        $skipped = 0;
+        $errors = 0;
         $bar = $this->output->createProgressBar($products->count());
 
         foreach ($products as $index => $product) {
@@ -76,21 +80,22 @@ class AutoCreatePosts extends Command
                     $scheduledTime->addDay();
                 }
 
-                // Verificar se já existe post agendado para este produto hoje
+                // Verificar se já existe post agendado para este produto hoje/futuro
                 $existingPost = AiAutoPost::where('product_id', $product->id)
                     ->where('platform', $platform)
                     ->where('status', 'scheduled')
-                    ->whereDate('scheduled_for', '>=', now())
+                    ->where('scheduled_for', '>=', now())
                     ->first();
 
                 if ($existingPost) {
                     $this->warn("  ⚠️ Post já agendado para: {$product->name}");
+                    $skipped++;
                     $bar->advance();
                     continue;
                 }
 
                 // Criar post agendado
-                AiAutoPost::create([
+                $post = AiAutoPost::create([
                     'platform' => $platform,
                     'post_type' => 'product',
                     'product_id' => $product->id,
@@ -101,11 +106,13 @@ class AutoCreatePosts extends Command
                     'scheduled_for' => $scheduledTime,
                 ]);
 
+                $createdPostIds[] = $post->id;
                 $created++;
                 $bar->advance();
 
             } catch (\Exception $e) {
                 $this->error("  ❌ Erro ao criar post para {$product->name}: {$e->getMessage()}");
+                $errors++;
                 $bar->advance();
             }
         }
@@ -113,18 +120,29 @@ class AutoCreatePosts extends Command
         $bar->finish();
         $this->newLine(2);
 
-        // 4. Resumo
+        // 4. Resumo detalhado
+        $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        $this->info("📊 RESUMO DA EXECUÇÃO:");
+        $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         $this->info("✅ Posts criados: {$created}");
+        
+        if ($skipped > 0) {
+            $this->warn("⏭️  Posts pulados (já agendados): {$skipped}");
+        }
+        
+        if ($errors > 0) {
+            $this->error("❌ Erros encontrados: {$errors}");
+        }
+        
         $this->newLine();
 
+        // Mostrar APENAS os posts recém-criados
         if ($created > 0) {
             $this->table(
                 ['Produto', 'Plataforma', 'Agendado Para'],
                 AiAutoPost::with('product')
-                    ->where('status', 'scheduled')
-                    ->whereDate('scheduled_for', '>=', now())
-                    ->latest('created_at')
-                    ->limit($created)
+                    ->whereIn('id', $createdPostIds)
+                    ->orderBy('scheduled_for')
                     ->get()
                     ->map(fn($post) => [
                         $post->product->name,
@@ -132,6 +150,28 @@ class AutoCreatePosts extends Command
                         $post->scheduled_for->format('d/m/Y H:i'),
                     ])
             );
+            
+            \Log::info('Posts criados automaticamente', [
+                'total' => $created,
+                'platform' => $platform,
+                'post_ids' => $createdPostIds,
+            ]);
+        } else {
+            $this->warn('⚠️ Nenhum post foi criado nesta execução.');
+            
+            if ($skipped > 0) {
+                $this->info('💡 Motivo: Todos os produtos selecionados já têm posts agendados.');
+            } elseif ($errors > 0) {
+                $this->error('💡 Motivo: Ocorreram erros ao tentar criar os posts.');
+            } else {
+                $this->warn('💡 Motivo: Nenhum produto disponível para criação de posts.');
+            }
+            
+            \Log::warning('Nenhum post criado automaticamente', [
+                'skipped' => $skipped,
+                'errors' => $errors,
+                'platform' => $platform,
+            ]);
         }
 
         return self::SUCCESS;
@@ -166,3 +206,4 @@ class AutoCreatePosts extends Command
         ];
     }
 }
+

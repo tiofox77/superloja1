@@ -158,6 +158,68 @@
                                 <p class="text-xs text-gray-500 mt-1">Use esta mesma string ao configurar o webhook</p>
                             </div>
                         </div>
+
+                        <!-- Webhook Configuration Help -->
+                        @if(\App\Models\SystemConfig::has('facebook_verify_token'))
+                        <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Configurar Webhook no Facebook
+                            </h4>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-blue-900 mb-1">URL de Callback</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" 
+                                               value="{{ url('api/webhooks/facebook') }}"
+                                               readonly
+                                               class="flex-1 px-3 py-2 bg-white border border-blue-300 rounded text-sm">
+                                        <button type="button"
+                                                onclick="navigator.clipboard.writeText('{{ url('api/webhooks/facebook') }}'); this.innerText='Copiado!'; setTimeout(() => this.innerText='Copiar', 2000)"
+                                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm whitespace-nowrap">
+                                            Copiar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div x-data="{ showToken: false }">
+                                    <label class="block text-xs font-medium text-blue-900 mb-1">Verificar Token (use no Facebook)</label>
+                                    <div class="flex gap-2">
+                                        <input :type="showToken ? 'text' : 'password'" 
+                                               value="{{ \App\Models\SystemConfig::get('facebook_verify_token', '') }}"
+                                               readonly
+                                               class="flex-1 px-3 py-2 bg-white border border-blue-300 rounded text-sm font-mono">
+                                        <button type="button"
+                                                @click="showToken = !showToken"
+                                                class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+                                            <span x-show="!showToken">👁️ Ver</span>
+                                            <span x-show="showToken">🙈 Ocultar</span>
+                                        </button>
+                                        <button type="button"
+                                                onclick="navigator.clipboard.writeText('{{ \App\Models\SystemConfig::get('facebook_verify_token', '') }}'); this.innerText='✓ Copiado'; setTimeout(() => this.innerText='📋 Copiar', 2000)"
+                                                class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm whitespace-nowrap">
+                                            📋 Copiar
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-blue-700 mt-1">⚠️ Use EXATAMENTE este token no campo "Verificar token" do Facebook</p>
+                                </div>
+
+                                <div class="bg-blue-100 rounded p-3 text-sm text-blue-800">
+                                    <p class="font-medium mb-2">📋 Passos:</p>
+                                    <ol class="list-decimal list-inside space-y-1 text-xs">
+                                        <li>Vá em Configurações → Webhooks no Meta for Developers</li>
+                                        <li>Cole a URL de callback acima</li>
+                                        <li>Digite o mesmo token de verificação que você configurou</li>
+                                        <li>Clique em "Verificar e salvar"</li>
+                                        <li>Selecione os eventos: messages, messaging_postbacks</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Instagram Settings -->
@@ -192,6 +254,68 @@
                                 <p class="text-xs text-gray-500 mt-1">Use esta mesma string ao configurar o webhook</p>
                             </div>
                         </div>
+
+                        <!-- Instagram Webhook Configuration Help -->
+                        @if(\App\Models\SystemConfig::has('instagram_verify_token'))
+                        <div class="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Configurar Webhook no Instagram
+                            </h4>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-purple-900 mb-1">URL de Callback</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" 
+                                               value="{{ url('api/webhooks/instagram') }}"
+                                               readonly
+                                               class="flex-1 px-3 py-2 bg-white border border-purple-300 rounded text-sm">
+                                        <button type="button"
+                                                onclick="navigator.clipboard.writeText('{{ url('api/webhooks/instagram') }}'); this.innerText='Copiado!'; setTimeout(() => this.innerText='Copiar', 2000)"
+                                                class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm whitespace-nowrap">
+                                            Copiar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div x-data="{ showToken: false }">
+                                    <label class="block text-xs font-medium text-purple-900 mb-1">Verificar Token (use no Instagram)</label>
+                                    <div class="flex gap-2">
+                                        <input :type="showToken ? 'text' : 'password'" 
+                                               value="{{ \App\Models\SystemConfig::get('instagram_verify_token', '') }}"
+                                               readonly
+                                               class="flex-1 px-3 py-2 bg-white border border-purple-300 rounded text-sm font-mono">
+                                        <button type="button"
+                                                @click="showToken = !showToken"
+                                                class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+                                            <span x-show="!showToken">👁️ Ver</span>
+                                            <span x-show="showToken">🙈 Ocultar</span>
+                                        </button>
+                                        <button type="button"
+                                                onclick="navigator.clipboard.writeText('{{ \App\Models\SystemConfig::get('instagram_verify_token', '') }}'); this.innerText='✓ Copiado'; setTimeout(() => this.innerText='📋 Copiar', 2000)"
+                                                class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm whitespace-nowrap">
+                                            📋 Copiar
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-purple-700 mt-1">⚠️ Use EXATAMENTE este token no campo "Verificar token" do Instagram</p>
+                                </div>
+
+                                <div class="bg-purple-100 rounded p-3 text-sm text-purple-800">
+                                    <p class="font-medium mb-2">📋 Passos:</p>
+                                    <ol class="list-decimal list-inside space-y-1 text-xs">
+                                        <li>Vá em Configurações → Webhooks no Meta for Developers</li>
+                                        <li>Cole a URL de callback acima</li>
+                                        <li>Digite o mesmo token de verificação que você configurou</li>
+                                        <li>Clique em "Verificar e salvar"</li>
+                                        <li>Selecione os eventos: messages, messaging_postbacks</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Info Alert -->
@@ -622,67 +746,246 @@
 
             <!-- Webhooks -->
             <div x-show="activeTab === 'webhooks'" x-cloak class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4">🔔 URLs dos Webhooks</h2>
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">🔔 Configuração de Webhooks</h2>
+                    <p class="text-gray-600 mt-1">Configure webhooks para receber mensagens do Facebook e Instagram</p>
+                </div>
                 
-                <div class="space-y-4">
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            📘 Facebook Webhook URL
-                        </label>
-                        <div class="flex gap-2">
-                            <input type="text" 
-                                   value="{{ route('webhooks.facebook') }}" 
-                                   readonly 
-                                   class="flex-1 px-4 py-2 border rounded-lg bg-white">
-                            <button onclick="navigator.clipboard.writeText('{{ route('webhooks.facebook') }}'); alert('URL copiada!')" 
-                                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                📋 Copiar
-                            </button>
-                            <button type="button"
-                                    wire:click="testWebhook('facebook')"
-                                    class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600">
-                                🔗 Info
-                            </button>
+                <div class="space-y-6">
+                    <!-- Facebook Webhook -->
+                    <div class="border border-blue-200 rounded-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                            <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                                Facebook Messenger
+                                @if(\App\Models\SystemConfig::has('facebook_verify_token'))
+                                    <span class="ml-auto text-xs bg-green-400 text-green-900 px-3 py-1 rounded-full">✓ Configurado</span>
+                                @else
+                                    <span class="ml-auto text-xs bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full">⚠ Não configurado</span>
+                                @endif
+                            </h3>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">
-                            Configure esta URL no Facebook Developers → Webhooks
-                        </p>
+                        
+                        <div class="p-6 space-y-4">
+                            <!-- URL de Callback -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    1️⃣ URL de Callback
+                                </label>
+                                <div class="flex gap-2">
+                                    <input type="text" 
+                                           value="{{ url('api/webhooks/facebook') }}" 
+                                           readonly 
+                                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm">
+                                    <button type="button"
+                                            onclick="navigator.clipboard.writeText('{{ url('api/webhooks/facebook') }}'); this.innerHTML='✓ Copiado!'; setTimeout(() => this.innerHTML='📋 Copiar', 2000)" 
+                                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
+                                        📋 Copiar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Verify Token -->
+                            @php
+                                $fbToken = \App\Models\SystemConfig::get('facebook_verify_token', 'Popadic17');
+                            @endphp
+                            <div x-data="{ showToken: false }">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    2️⃣ Verificar Token (Verify Token)
+                                </label>
+                                <div class="flex gap-2">
+                                    <input :type="showToken ? 'text' : 'password'" 
+                                           value="{{ $fbToken }}"
+                                           readonly
+                                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm">
+                                    <button type="button"
+                                            @click="showToken = !showToken"
+                                            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                                        <span x-show="!showToken">👁️ Ver</span>
+                                        <span x-show="showToken">🙈 Ocultar</span>
+                                    </button>
+                                    <button type="button"
+                                            onclick="navigator.clipboard.writeText('{{ $fbToken }}'); this.innerHTML='✓ Copiado!'; setTimeout(() => this.innerHTML='📋 Copiar', 2000)"
+                                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition whitespace-nowrap">
+                                        📋 Copiar
+                                    </button>
+                                </div>
+                                <p class="text-xs text-blue-600 mt-2 font-medium">⚠️ Cole EXATAMENTE este token no Facebook</p>
+                            </div>
+
+                            <!-- Link Direto -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p class="text-sm font-medium text-blue-900 mb-2">📝 Configure no Facebook Developers:</p>
+                                <a href="https://developers.facebook.com" 
+                                   target="_blank"
+                                   class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm">
+                                    🔗 Abrir Facebook Developers
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                </a>
+                                <p class="text-xs text-blue-700 mt-2">
+                                    Produtos → Messenger → Configurações → Webhooks → Editar assinatura
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            📸 Instagram Webhook URL
-                        </label>
-                        <div class="flex gap-2">
-                            <input type="text" 
-                                   value="{{ route('webhooks.instagram') }}" 
-                                   readonly 
-                                   class="flex-1 px-4 py-2 border rounded-lg bg-white">
-                            <button onclick="navigator.clipboard.writeText('{{ route('webhooks.instagram') }}'); alert('URL copiada!')" 
-                                    class="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600">
-                                📋 Copiar
-                            </button>
-                            <button type="button"
-                                    wire:click="testWebhook('instagram')"
-                                    class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600">
-                                🔗 Info
-                            </button>
+                    <!-- Instagram Webhook -->
+                    <div class="border border-purple-200 rounded-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4">
+                            <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                                Instagram
+                                @if(\App\Models\SystemConfig::has('instagram_verify_token'))
+                                    <span class="ml-auto text-xs bg-green-400 text-green-900 px-3 py-1 rounded-full">✓ Configurado</span>
+                                @else
+                                    <span class="ml-auto text-xs bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full">⚠ Não configurado</span>
+                                @endif
+                            </h3>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">
-                            Configure esta URL no Facebook Developers → Instagram → Webhooks
-                        </p>
+                        
+                        <div class="p-6 space-y-4">
+                            <!-- URL de Callback -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    1️⃣ URL de Callback
+                                </label>
+                                <div class="flex gap-2">
+                                    <input type="text" 
+                                           value="{{ url('api/webhooks/instagram') }}" 
+                                           readonly 
+                                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm">
+                                    <button type="button"
+                                            onclick="navigator.clipboard.writeText('{{ url('api/webhooks/instagram') }}'); this.innerHTML='✓ Copiado!'; setTimeout(() => this.innerHTML='📋 Copiar', 2000)" 
+                                            class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition whitespace-nowrap">
+                                        📋 Copiar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Verify Token -->
+                            @php
+                                $igToken = \App\Models\SystemConfig::get('instagram_verify_token', 'Popadic17');
+                            @endphp
+                            <div x-data="{ showToken: false }">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    2️⃣ Verificar Token (Verify Token)
+                                </label>
+                                <div class="flex gap-2">
+                                    <input :type="showToken ? 'text' : 'password'" 
+                                           value="{{ $igToken }}"
+                                           readonly
+                                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm">
+                                    <button type="button"
+                                            @click="showToken = !showToken"
+                                            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                                        <span x-show="!showToken">👁️ Ver</span>
+                                        <span x-show="showToken">🙈 Ocultar</span>
+                                    </button>
+                                    <button type="button"
+                                            onclick="navigator.clipboard.writeText('{{ $igToken }}'); this.innerHTML='✓ Copiado!'; setTimeout(() => this.innerHTML='📋 Copiar', 2000)"
+                                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition whitespace-nowrap">
+                                        📋 Copiar
+                                    </button>
+                                </div>
+                                <p class="text-xs text-purple-600 mt-2 font-medium">⚠️ Cole EXATAMENTE este token no Instagram</p>
+                            </div>
+
+                            <!-- Link Direto -->
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <p class="text-sm font-medium text-purple-900 mb-2">📝 Configure no Facebook Developers:</p>
+                                <a href="https://developers.facebook.com" 
+                                   target="_blank"
+                                   class="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 text-sm">
+                                    🔗 Abrir Facebook Developers
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                </a>
+                                <p class="text-xs text-purple-700 mt-2">
+                                    Produtos → Instagram → Configurações → Webhooks → Editar assinatura
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p class="text-sm text-blue-800 flex items-start">
-                            <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    <!-- Instruções Passo a Passo -->
+                    <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-6">
+                        <h4 class="font-bold text-lg text-indigo-900 mb-4 flex items-center gap-2">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            <span>
-                                <strong>Importante:</strong> Os verify tokens estão configurados na aba <strong>"💾 Configurações Sistema"</strong> 
-                                e são armazenados de forma criptografada no banco de dados. Use os mesmos tokens ao configurar os webhooks no Facebook Developers.
-                            </span>
-                        </p>
+                            📋 Passo a Passo para Configurar
+                        </h4>
+                        
+                        <ol class="space-y-3 text-sm text-indigo-800">
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                <div>
+                                    <p class="font-medium">Configure os Tokens</p>
+                                    <p class="text-indigo-600">Vá para <strong>"💾 Configurações Sistema"</strong> e salve os <strong>Verify Tokens</strong></p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                <div>
+                                    <p class="font-medium">Copie a URL de Callback</p>
+                                    <p class="text-indigo-600">Clique no botão <strong>"📋 Copiar"</strong> ao lado da URL</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                                <div>
+                                    <p class="font-medium">Copie o Verify Token</p>
+                                    <p class="text-indigo-600">Clique <strong>"👁️ Ver"</strong> ou diretamente em <strong>"📋 Copiar"</strong></p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                                <div>
+                                    <p class="font-medium">Acesse Facebook Developers</p>
+                                    <p class="text-indigo-600">Clique no link <strong>"🔗 Abrir Facebook Developers"</strong></p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">5</span>
+                                <div>
+                                    <p class="font-medium">Configure o Webhook</p>
+                                    <p class="text-indigo-600">Cole a <strong>URL</strong> e o <strong>Token</strong>, depois clique <strong>"Verificar e salvar"</strong></p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">6</span>
+                                <div>
+                                    <p class="font-medium">Selecione Eventos</p>
+                                    <p class="text-indigo-600">Marque: <strong>messages</strong> e <strong>messaging_postbacks</strong></p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- Teste de Conectividade -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                        <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            🧪 Testar Configuração
+                        </h4>
+                        <p class="text-sm text-gray-600 mb-3">Verifique se os webhooks estão configurados corretamente:</p>
+                        <a href="{{ url('api/webhooks/test') }}" 
+                           target="_blank"
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                            🔍 Testar Webhooks
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -738,7 +1041,7 @@
                                         
                                         <p class="text-sm text-gray-600 mb-3">{{ $job['description'] }}</p>
                                         
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-4">
                                             <div class="flex items-center gap-2">
                                                 <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
@@ -760,15 +1063,54 @@
                                                 <span class="text-gray-700"><strong>Próxima:</strong> {{ $job['next_run'] }}</span>
                                             </div>
                                         </div>
+
+                                        <!-- Comando Cron para cPanel -->
+                                        <div class="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg" 
+                                             x-data="{ 
+                                                 copied: false,
+                                                 command: `{{ $job['full_command'] }}`,
+                                                 copyCommand() {
+                                                     navigator.clipboard.writeText(this.command);
+                                                     this.copied = true;
+                                                     setTimeout(() => this.copied = false, 2000);
+                                                 }
+                                             }">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div class="flex-1">
+                                                    <label class="text-xs font-semibold text-gray-700 mb-1 block flex items-center gap-2">
+                                                        <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        Comando para colar no cPanel:
+                                                    </label>
+                                                    <code class="text-xs bg-white border border-gray-300 px-3 py-2 rounded font-mono block overflow-x-auto text-gray-800">{{ $job['full_command'] }}</code>
+                                                </div>
+                                                <button 
+                                                    @click="copyCommand()"
+                                                    class="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors whitespace-nowrap">
+                                                    <span x-text="copied ? '✓ Copiado!' : '📋 Copiar'"></span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="ml-4">
                                         <button wire:click="testCronJob('{{ $job['command'] }}')" 
-                                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                wire:loading.attr="disabled"
+                                                wire:target="testCronJob"
+                                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <!-- Ícone normal -->
+                                            <svg wire:loading.remove wire:target="testCronJob" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
                                             </svg>
-                                            Testar Agora
+                                            <!-- Spinner loading -->
+                                            <svg wire:loading wire:target="testCronJob" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <!-- Texto -->
+                                            <span wire:loading.remove wire:target="testCronJob">Testar Agora</span>
+                                            <span wire:loading wire:target="testCronJob">Executando...</span>
                                         </button>
                                     </div>
                                 </div>

@@ -13,6 +13,7 @@ class AiAutoPost extends Model
         'platform',
         'post_type',
         'product_id',
+        'product_ids',  // Para carrosséis com múltiplos produtos
         'content',
         'media_urls',
         'hashtags',
@@ -26,6 +27,7 @@ class AiAutoPost extends Model
     ];
 
     protected $casts = [
+        'product_ids' => 'array',  // Cast para array
         'media_urls' => 'array',
         'hashtags' => 'array',
         'scheduled_for' => 'datetime',

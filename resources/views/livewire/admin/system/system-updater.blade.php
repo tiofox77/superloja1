@@ -50,6 +50,44 @@
         </button>
     </div>
 
+    <!-- Pré-requisitos -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            Verificação de Pré-requisitos
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            @foreach($prerequisites as $key => $req)
+                <div class="flex items-center gap-3 p-3 rounded-lg {{ $req['status'] ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200' }}">
+                    @if($req['status'])
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    @else
+                        <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    @endif
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold {{ $req['status'] ? 'text-green-800' : 'text-red-800' }}">{{ $req['name'] }}</p>
+                        <p class="text-xs {{ $req['status'] ? 'text-green-600' : 'text-red-600' }}">{{ $req['message'] }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        @if(!$canUpdate)
+            <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-800">
+                    <strong>⚠️ Atenção:</strong> Sistema não atende todos os pré-requisitos. Corrija os itens acima antes de atualizar.
+                </p>
+            </div>
+        @endif
+    </div>
+
     <!-- Status Card -->
     <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
         <!-- Info -->
@@ -80,7 +118,20 @@
                 @if($hasUpdate && $updateInfo)
                     <div class="p-3 bg-green-50 border border-green-200 rounded-lg mb-3">
                         <p class="text-sm font-semibold text-green-800 mb-1">{{ $updateInfo['name'] }}</p>
-                        <p class="text-xs text-green-600">Publicado em {{ \Carbon\Carbon::parse($updateInfo['published_at'])->format('d/m/Y H:i') }}</p>
+                        <p class="text-xs text-green-600 mb-2">Publicado em {{ \Carbon\Carbon::parse($updateInfo['published_at'])->format('d/m/Y H:i') }}</p>
+                        
+                        @if($updateInfo['body'])
+                            <button wire:click="toggleChangelog" 
+                                    class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+                                {{ $showChangelog ? '▼' : '▶' }} Ver Changelog
+                            </button>
+                            
+                            @if($showChangelog)
+                                <div class="mt-2 p-3 bg-white rounded border border-green-300 text-xs text-gray-700 max-h-48 overflow-y-auto">
+                                    {!! nl2br(e($updateInfo['body'])) !!}
+                                </div>
+                            @endif
+                        @endif
                     </div>
                 @endif
 
@@ -113,11 +164,12 @@
         @if(!$isUpdating && !$updateComplete)
             <button wire:click="startUpdate"
                     wire:loading.attr="disabled"
-                    class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-3 disabled:opacity-50">
+                    @if(!$canUpdate) disabled @endif
+                    class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                Iniciar Atualizacao
+                {{ $canUpdate ? 'Iniciar Atualizacao' : 'Sistema não atende pré-requisitos' }}
             </button>
         @endif
 
@@ -169,6 +221,44 @@
         </div>
     @endif
 
+    <!-- Histórico de Atualizações -->
+    @if(count($updateHistory) > 0 && !$isUpdating)
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Histórico de Atualizações
+            </h2>
+
+            <div class="space-y-2">
+                @foreach(array_reverse($updateHistory) as $history)
+                    <div class="flex items-center gap-3 p-3 rounded-lg {{ $history['status'] === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200' }}">
+                        @if($history['status'] === 'success')
+                            <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        @else
+                            <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        @endif
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-800">Versão {{ $history['version'] }}</p>
+                            <p class="text-xs text-gray-600">
+                                {{ \Carbon\Carbon::parse($history['timestamp'])->format('d/m/Y H:i') }}
+                                @if($history['duration'])
+                                    · {{ $history['duration'] }}s
+                                @endif
+                                · {{ $history['user'] }}
+                            </p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <!-- Logs -->
     @if(count($logs) > 0)
         <div class="bg-gray-900 rounded-xl shadow-lg p-6">
@@ -181,7 +271,7 @@
                 <span class="text-xs text-gray-400">{{ count($logs) }} registros</span>
             </div>
 
-            <div class="bg-black rounded-lg p-4 font-mono text-sm space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+            <div id="logs-container" class="bg-black rounded-lg p-4 font-mono text-sm space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                 @foreach($logs as $log)
                     <div class="flex gap-3 hover:bg-gray-800 p-2 rounded transition-colors">
                         <span class="text-gray-500 text-xs whitespace-nowrap">{{ $log['time'] }}</span>
@@ -239,13 +329,13 @@
             }, 1000); // Delay de 1 segundo entre steps
         });
         
-        // Toastr
-        Livewire.on('notify', (event) => {
-            const data = event[0] || event;
-            if (data.type === 'success') {
-                toastr.success(data.message);
-            } else if (data.type === 'error') {
-                toastr.error(data.message);
+        // Auto-scroll logs
+        Livewire.hook('morph.updated', ({ el, component }) => {
+            const logsContainer = document.getElementById('logs-container');
+            if (logsContainer && @this.autoScroll) {
+                setTimeout(() => {
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }, 100);
             }
         });
     });

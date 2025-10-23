@@ -69,6 +69,9 @@ class AgentSettings extends Component
 
     private function loadSystemConfigs()
     {
+        // Inicializar tokens padrão se não existirem
+        $this->initializeDefaultTokens();
+        
         // Carregar configurações do banco de dados
         $this->ai_agent_enabled = \App\Models\SystemConfig::get('ai_agent_enabled', true);
         $this->ai_analysis_frequency = \App\Models\SystemConfig::get('ai_analysis_frequency', 'daily');
@@ -87,6 +90,30 @@ class AgentSettings extends Component
         $this->openai_model = \App\Models\SystemConfig::get('openai_model', 'gpt-4o-mini');
         $this->claude_api_key = ''; // Não exibir por segurança
         $this->claude_model = \App\Models\SystemConfig::get('claude_model', 'claude-3-5-sonnet-20241022');
+    }
+
+    private function initializeDefaultTokens()
+    {
+        // Configurar token padrão "Popadic17" se não existir
+        if (!\App\Models\SystemConfig::has('facebook_verify_token')) {
+            \App\Models\SystemConfig::set('facebook_verify_token', 'Popadic17', [
+                'group' => 'facebook',
+                'type' => 'string',
+                'is_encrypted' => true,
+                'label' => 'Facebook Verify Token',
+                'description' => 'Token de verificação para webhooks do Facebook',
+            ]);
+        }
+
+        if (!\App\Models\SystemConfig::has('instagram_verify_token')) {
+            \App\Models\SystemConfig::set('instagram_verify_token', 'Popadic17', [
+                'group' => 'instagram',
+                'type' => 'string',
+                'is_encrypted' => true,
+                'label' => 'Instagram Verify Token',
+                'description' => 'Token de verificação para webhooks do Instagram',
+            ]);
+        }
     }
 
     private function loadConfig()
@@ -472,6 +499,9 @@ class AgentSettings extends Component
      */
     public function getCronJobs()
     {
+        $basePath = base_path();
+        $phpPath = '/usr/local/bin/php'; // Caminho padrão, ajustar se necessário
+        
         return [
             [
                 'name' => 'Publicar Posts Agendados',
@@ -481,15 +511,47 @@ class AgentSettings extends Component
                 'description' => 'Publica automaticamente posts agendados no Facebook/Instagram',
                 'next_run' => now()->addMinute()->format('H:i:s'),
                 'status' => 'active',
+                'full_command' => "* * * * * {$phpPath} {$basePath}/artisan ai:publish-posts >> /dev/null 2>&1",
             ],
             [
-                'name' => 'Criar Posts Automaticamente',
-                'command' => 'ai:auto-create-posts',
-                'frequency' => 'A cada 3 horas',
-                'cron' => '0 */3 * * *',
-                'description' => 'Cria automaticamente posts de produtos HOT e agenda publicação',
-                'next_run' => $this->getNextCronRun('0 */3 * * *'),
+                'name' => 'Criar Posts no Facebook',
+                'command' => 'ai:auto-create-posts --platform=facebook',
+                'frequency' => '4x por dia (0h, 6h, 12h, 18h)',
+                'cron' => '0 */6 * * *',
+                'description' => 'Cria automaticamente 3 posts de produtos HOT para Facebook',
+                'next_run' => $this->getNextCronRun('0 */6 * * *'),
                 'status' => 'active',
+                'full_command' => "0 */6 * * * {$phpPath} {$basePath}/artisan ai:auto-create-posts --platform=facebook >> /dev/null 2>&1",
+            ],
+            [
+                'name' => 'Criar Posts no Instagram',
+                'command' => 'ai:auto-create-posts --platform=instagram',
+                'frequency' => '4x por dia (3h, 9h, 15h, 21h)',
+                'cron' => '0 3-21/6 * * *',
+                'description' => 'Cria automaticamente 3 posts de produtos HOT para Instagram',
+                'next_run' => $this->getNextCronRunInstagram(),
+                'status' => 'active',
+                'full_command' => "0 3-21/6 * * * {$phpPath} {$basePath}/artisan ai:auto-create-posts --platform=instagram >> /dev/null 2>&1",
+            ],
+            [
+                'name' => 'Criar Carrossel no Facebook',
+                'command' => 'ai:auto-create-carousel --platform=facebook --products=10',
+                'frequency' => 'Diariamente ao meio-dia',
+                'cron' => '0 12 * * *',
+                'description' => '🎨 Cria post de CARROSSEL com 10 produtos para Facebook',
+                'next_run' => now()->setTime(12, 0) > now() ? now()->setTime(12, 0)->format('d/m/Y H:i') : now()->addDay()->setTime(12, 0)->format('d/m/Y H:i'),
+                'status' => 'active',
+                'full_command' => "0 12 * * * {$phpPath} {$basePath}/artisan ai:auto-create-carousel --platform=facebook --products=10 >> /dev/null 2>&1",
+            ],
+            [
+                'name' => 'Criar Carrossel no Instagram',
+                'command' => 'ai:auto-create-carousel --platform=instagram --products=10',
+                'frequency' => 'Diariamente às 19h',
+                'cron' => '0 19 * * *',
+                'description' => '🎨 Cria post de CARROSSEL com 10 produtos para Instagram',
+                'next_run' => now()->setTime(19, 0) > now() ? now()->setTime(19, 0)->format('d/m/Y H:i') : now()->addDay()->setTime(19, 0)->format('d/m/Y H:i'),
+                'status' => 'active',
+                'full_command' => "0 19 * * * {$phpPath} {$basePath}/artisan ai:auto-create-carousel --platform=instagram --products=10 >> /dev/null 2>&1",
             ],
             [
                 'name' => 'Analisar Produtos',
@@ -499,6 +561,7 @@ class AgentSettings extends Component
                 'description' => 'Analisa performance dos produtos e gera insights com IA',
                 'next_run' => now()->setTime(2, 0)->addDay()->format('d/m/Y H:i'),
                 'status' => 'active',
+                'full_command' => "0 2 * * * {$phpPath} {$basePath}/artisan ai:analyze-products >> /dev/null 2>&1",
             ],
             [
                 'name' => 'Calcular Métricas da IA',
@@ -508,6 +571,7 @@ class AgentSettings extends Component
                 'description' => 'Calcula métricas de performance da IA (conversas, sentimento, sucesso)',
                 'next_run' => $this->getNextCronRun('0 */4 * * *'),
                 'status' => 'active',
+                'full_command' => "0 */4 * * * {$phpPath} {$basePath}/artisan ai:calculate-metrics >> /dev/null 2>&1",
             ],
         ];
     }
@@ -550,7 +614,40 @@ class AgentSettings extends Component
             return $now->copy()->addDay()->setTime(0, 0)->format('d/m/Y H:i');
         }
         
+        // Para */6 horas (a cada 6 horas: 0, 6, 12, 18) - Facebook
+        if ($hour === '*/6') {
+            $nextHours = [0, 6, 12, 18];
+            foreach ($nextHours as $h) {
+                if ($h > $currentHour) {
+                    return $now->copy()->setTime($h, 0)->format('d/m/Y H:i');
+                }
+            }
+            // Se passou de todas as horas de hoje, próxima é 0h do próximo dia
+            return $now->copy()->addDay()->setTime(0, 0)->format('d/m/Y H:i');
+        }
+        
         return 'N/A';
+    }
+
+    /**
+     * Calcular próxima execução do Instagram (3h, 9h, 15h, 21h)
+     */
+    private function getNextCronRunInstagram(): string
+    {
+        $now = now();
+        $currentHour = $now->hour;
+        
+        // Horários específicos do Instagram
+        $instagramHours = [3, 9, 15, 21];
+        
+        foreach ($instagramHours as $h) {
+            if ($h > $currentHour) {
+                return $now->copy()->setTime($h, 0)->format('d/m/Y H:i');
+            }
+        }
+        
+        // Se passou de todas as horas de hoje, próxima é 3h do próximo dia
+        return $now->copy()->addDay()->setTime(3, 0)->format('d/m/Y H:i');
     }
 
     /**

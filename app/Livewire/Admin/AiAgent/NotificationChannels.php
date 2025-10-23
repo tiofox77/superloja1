@@ -101,7 +101,7 @@ class NotificationChannels extends Component
             'quiet_hours' => $quietHours,
         ]);
 
-        $this->dispatch('notify', [
+        $this->dispatch('showToast', [
             'type' => 'success',
             'message' => 'Configuracoes salvas com sucesso!'
         ]);
@@ -110,7 +110,7 @@ class NotificationChannels extends Component
     public function testEmail()
     {
         if (!$this->email_enabled || !$this->email) {
-            $this->dispatch('notify', [
+            $this->dispatch('showToast', [
                 'type' => 'error',
                 'message' => 'Email nao esta habilitado ou nao configurado.'
             ]);
@@ -126,12 +126,12 @@ class NotificationChannels extends Component
                 }
             );
             
-            $this->dispatch('notify', [
+            $this->dispatch('showToast', [
                 'type' => 'success',
                 'message' => 'Email de teste enviado para ' . $this->email
             ]);
         } catch (\Exception $e) {
-            $this->dispatch('notify', [
+            $this->dispatch('showToast', [
                 'type' => 'error',
                 'message' => 'Erro ao enviar email: ' . $e->getMessage()
             ]);
@@ -141,7 +141,7 @@ class NotificationChannels extends Component
     public function testSMS()
     {
         if (!$this->sms_enabled || !$this->phone) {
-            $this->dispatch('notify', [
+            $this->dispatch('showToast', [
                 'type' => 'error',
                 'message' => 'SMS nao esta habilitado ou telefone nao configurado.'
             ]);
@@ -159,20 +159,98 @@ class NotificationChannels extends Component
             $sent = $smsService->sendSms($this->phone, $message);
             
             if ($sent) {
-                $this->dispatch('notify', [
+                $this->dispatch('showToast', [
                     'type' => 'success',
                     'message' => 'SMS de teste enviado com sucesso para ' . $this->phone
                 ]);
             } else {
-                $this->dispatch('notify', [
+                $this->dispatch('showToast', [
                     'type' => 'error',
                     'message' => 'Falha ao enviar SMS. Verifique configuracoes da Unimtx.'
                 ]);
             }
         } catch (\Exception $e) {
-            $this->dispatch('notify', [
+            $this->dispatch('showToast', [
                 'type' => 'error',
                 'message' => 'Erro ao enviar SMS: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function testMessenger()
+    {
+        if (!$this->facebook_messenger_enabled || !$this->facebook_messenger_id) {
+            $this->dispatch('showToast', [
+                'type' => 'error',
+                'message' => 'Messenger nao esta habilitado ou ID nao configurado.'
+            ]);
+            return;
+        }
+
+        try {
+            $socialMedia = app(\App\Services\SocialMediaAgentService::class);
+            
+            $message = "🔔 *Teste de Notificacao - SuperLoja*\n\n" .
+                       "Este e um teste do sistema de notificacoes via Messenger!\n\n" .
+                       "Se voce recebeu esta mensagem, o Messenger esta configurado corretamente! ✅\n\n" .
+                       "Data/Hora: " . now()->format('d/m/Y H:i:s');
+            
+            $sent = $socialMedia->sendMessengerMessage($this->facebook_messenger_id, $message);
+            
+            if ($sent) {
+                $this->dispatch('showToast', [
+                    'type' => 'success',
+                    'message' => '✅ Mensagem de teste enviada para o Messenger!'
+                ]);
+            } else {
+                $this->dispatch('showToast', [
+                    'type' => 'error',
+                    'message' => '❌ Falha ao enviar. Verifique: Token Facebook, Page ID e Messenger ID.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('showToast', [
+                'type' => 'error',
+                'message' => 'Erro ao enviar Messenger: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function testInstagram()
+    {
+        if (!$this->instagram_enabled || !$this->instagram_id) {
+            $this->dispatch('showToast', [
+                'type' => 'error',
+                'message' => 'Instagram nao esta habilitado ou ID nao configurado.'
+            ]);
+            return;
+        }
+
+        try {
+            $socialMedia = app(\App\Services\SocialMediaAgentService::class);
+            
+            $message = "🔔 *Teste de Notificacao - SuperLoja*\n\n" .
+                       "Este e um teste do sistema de notificacoes via Instagram!\n\n" .
+                       "Se voce recebeu esta mensagem, o Instagram esta configurado corretamente! ✅\n\n" .
+                       "Data/Hora: " . now()->format('d/m/Y H:i:s');
+            
+            $sent = $socialMedia->sendInstagramMessage($this->instagram_id, $message);
+            
+            if ($sent) {
+                $this->dispatch('showToast', [
+                    'type' => 'success',
+                    'message' => '✅ Mensagem de teste enviada para o Instagram!'
+                ]);
+            } else {
+                $this->dispatch('showToast', [
+                    'type' => 'error',
+                    'message' => '❌ Falha ao enviar. Verifique: Token Instagram, Business Account ID e Instagram ID.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('showToast', [
+                'type' => 'error',
+                'message' => 'Erro ao enviar Instagram: ' . $e->getMessage()
             ]);
         }
     }

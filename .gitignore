@@ -56,3 +56,12 @@ yarn-error.log*
 Homestead.json
 Homestead.yaml
 docker-compose.override.yml
+
+# Arquivos grandes (backups, zips, etc)
+*.zip
+*.rar
+*.tar.gz
+*.sql
+*.dump
+/backups/
+/storage/backups/

@@ -1,0 +1,608 @@
+{
+  "name": "SuperLoja - Automação com Notificações Messenger",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/1 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-publicar-posts",
+      "name": "Schedule - Publicar Posts (1 min)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://superloja.test/api/cron/trigger-posts",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "http-publicar-posts",
+      "name": "Publicar Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.success }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-posts-success",
+      "name": "Posts OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "SEU_PAGE_ACCESS_TOKEN_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": \"SEU_MESSENGER_ID_AQUI\"} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": \"✅ Posts Publicados: \" + $node[\"Publicar Posts\"].json.published_count + \" posts com sucesso!\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-posts-success",
+      "name": "Notificar Sucesso Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 250]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "SEU_PAGE_ACCESS_TOKEN_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": \"SEU_MESSENGER_ID_AQUI\"} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": \"ℹ️ Posts: Nenhum post pendente para publicar.\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-posts-empty",
+      "name": "Notificar Sem Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 350]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-analise",
+      "name": "Schedule - Análise (02:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://superloja.test/api/cron/trigger-analysis",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "http-analise",
+      "name": "Analisar Produtos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "SEU_PAGE_ACCESS_TOKEN_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": \"SEU_MESSENGER_ID_AQUI\"} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": \"📊 Análise de Produtos concluída! Verifique o dashboard.\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-analise",
+      "name": "Notificar Análise",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 600]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0,6,12,18 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-posts-fb",
+      "name": "Schedule - Posts FB (0,6,12,18h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 850]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://superloja.test/api/cron/trigger-create-posts?platform=facebook&limit=3",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "http-posts-fb",
+      "name": "Criar Posts Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 850]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "SEU_PAGE_ACCESS_TOKEN_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": \"SEU_MESSENGER_ID_AQUI\"} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": \"📱 Facebook: 3 novos posts criados e agendados!\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-posts-fb",
+      "name": "Notificar Posts FB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 850]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3,9,15,21 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-posts-ig",
+      "name": "Schedule - Posts IG (3,9,15,21h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 1050]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://superloja.test/api/cron/trigger-create-posts?platform=instagram&limit=3",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "http-posts-ig",
+      "name": "Criar Posts Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 1050]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "SEU_PAGE_ACCESS_TOKEN_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": \"SEU_MESSENGER_ID_AQUI\"} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": \"📸 Instagram: 3 novos posts criados e agendados!\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-posts-ig",
+      "name": "Notificar Posts IG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 1050]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 12 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-carrossel-fb",
+      "name": "Schedule - Carrossel FB (12:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 1250]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://superloja.test/api/cron/trigger-create-carousels?platform=facebook&count=1&products=8",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "http-carrossel-fb",
+      "name": "Criar Carrossel Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 1250]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "SEU_PAGE_ACCESS_TOKEN_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": \"SEU_MESSENGER_ID_AQUI\"} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": \"🎨 Facebook: Novo carrossel com 8 produtos criado!\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-carrossel-fb",
+      "name": "Notificar Carrossel FB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 1250]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 19 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-carrossel-ig",
+      "name": "Schedule - Carrossel IG (19:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 1450]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://superloja.test/api/cron/trigger-create-carousels?platform=instagram&count=1&products=8",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "http-carrossel-ig",
+      "name": "Criar Carrossel Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 1450]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "SEU_PAGE_ACCESS_TOKEN_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": \"SEU_MESSENGER_ID_AQUI\"} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": \"🎨 Instagram: Novo carrossel com 8 produtos criado!\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-carrossel-ig",
+      "name": "Notificar Carrossel IG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 1450]
+    }
+  ],
+  "connections": {
+    "Schedule - Publicar Posts (1 min)": {
+      "main": [
+        [
+          {
+            "node": "Publicar Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar Posts": {
+      "main": [
+        [
+          {
+            "node": "Posts OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Posts OK?": {
+      "main": [
+        [
+          {
+            "node": "Notificar Sucesso Posts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar Sem Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - Análise (02:00)": {
+      "main": [
+        [
+          {
+            "node": "Analisar Produtos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analisar Produtos": {
+      "main": [
+        [
+          {
+            "node": "Notificar Análise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - Posts FB (0,6,12,18h)": {
+      "main": [
+        [
+          {
+            "node": "Criar Posts Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Posts Facebook": {
+      "main": [
+        [
+          {
+            "node": "Notificar Posts FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - Posts IG (3,9,15,21h)": {
+      "main": [
+        [
+          {
+            "node": "Criar Posts Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Posts Instagram": {
+      "main": [
+        [
+          {
+            "node": "Notificar Posts IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - Carrossel FB (12:00)": {
+      "main": [
+        [
+          {
+            "node": "Criar Carrossel Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Carrossel Facebook": {
+      "main": [
+        [
+          {
+            "node": "Notificar Carrossel FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - Carrossel IG (19:00)": {
+      "main": [
+        [
+          {
+            "node": "Criar Carrossel Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Carrossel Instagram": {
+      "main": [
+        [
+          {
+            "node": "Notificar Carrossel IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "id": "workflow-superloja-notificacoes",
+  "meta": {
+    "instanceId": "superloja"
+  },
+  "tags": []
+}

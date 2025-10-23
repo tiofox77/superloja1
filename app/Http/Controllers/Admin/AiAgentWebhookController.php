@@ -28,14 +28,33 @@ class AiAgentWebhookController extends Controller
             $token = $request->get('hub_verify_token');
             $challenge = $request->get('hub_challenge');
 
+            Log::info('Facebook Webhook - Verificacao', [
+                'token_recebido' => $token,
+                'challenge' => $challenge,
+                'mode' => $request->get('hub_mode')
+            ]);
+
             // Token de verificação (buscar do banco de dados)
             $storedToken = \App\Models\SystemConfig::get('facebook_verify_token');
             
+            Log::info('Facebook Webhook - Token armazenado', [
+                'stored_token' => $storedToken ? 'configurado' : 'vazio',
+                'match' => $token === $storedToken
+            ]);
+            
             if ($token === $storedToken) {
-                return response($challenge, 200);
+                // Retornar APENAS o challenge (texto puro, sem headers HTML)
+                return response($challenge, 200)
+                    ->header('Content-Type', 'text/plain');
             }
 
-            return response('Token inválido', 403);
+            Log::error('Facebook Webhook - Token invalido', [
+                'token_recebido' => $token,
+                'token_esperado_existe' => !empty($storedToken)
+            ]);
+
+            return response('Token inválido', 403)
+                ->header('Content-Type', 'text/plain');
         }
 
         // Processar mensagens recebidas
@@ -62,14 +81,33 @@ class AiAgentWebhookController extends Controller
             $token = $request->get('hub_verify_token');
             $challenge = $request->get('hub_challenge');
 
+            Log::info('Instagram Webhook - Verificacao', [
+                'token_recebido' => $token,
+                'challenge' => $challenge,
+                'mode' => $request->get('hub_mode')
+            ]);
+
             // Token de verificação (buscar do banco de dados)
             $storedToken = \App\Models\SystemConfig::get('instagram_verify_token');
             
+            Log::info('Instagram Webhook - Token armazenado', [
+                'stored_token' => $storedToken ? 'configurado' : 'vazio',
+                'match' => $token === $storedToken
+            ]);
+            
             if ($token === $storedToken) {
-                return response($challenge, 200);
+                // Retornar APENAS o challenge (texto puro, sem headers HTML)
+                return response($challenge, 200)
+                    ->header('Content-Type', 'text/plain');
             }
 
-            return response('Token inválido', 403);
+            Log::error('Instagram Webhook - Token invalido', [
+                'token_recebido' => $token,
+                'token_esperado_existe' => !empty($storedToken)
+            ]);
+
+            return response('Token inválido', 403)
+                ->header('Content-Type', 'text/plain');
         }
 
         // Processar mensagens recebidas

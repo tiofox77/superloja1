@@ -49,6 +49,12 @@ Route::get('/categorias', function () {
 
 Route::get('/produtos', \App\Livewire\Pages\ProductsPage::class)->name('products');
 
+// Rota para produto individual
+Route::get('/produto/{id}', function ($id) {
+    $product = \App\Models\Product::with(['category', 'brand'])->findOrFail($id);
+    return view('product-detail', compact('product'));
+})->name('product.show');
+
 Route::get('/ofertas', function () {
     $offers = \App\Models\Product::with(['category', 'brand'])
         ->where('is_active', true)
@@ -260,7 +266,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/insights', App\Livewire\Admin\AiAgent\ProductInsights::class)->name('insights');
         Route::get('/conversations', App\Livewire\Admin\AiAgent\ConversationManager::class)->name('conversations');
         Route::get('/posts', App\Livewire\Admin\AiAgent\PostScheduler::class)->name('posts');
+        Route::get('/carousels', App\Livewire\Admin\AiAgent\CarouselManager::class)->name('carousels');
         Route::get('/knowledge', App\Livewire\Admin\AiAgent\KnowledgeCenter::class)->name('knowledge');
+        Route::get('/diagnostic-logs', App\Livewire\Admin\AiAgent\DiagnosticLogs::class)->name('diagnostic-logs');
         Route::get('/notifications', App\Livewire\Admin\AiAgent\NotificationChannels::class)->name('notifications');
         Route::get('/settings', App\Livewire\Admin\AiAgent\AgentSettings::class)->name('settings');
     });
@@ -300,15 +308,10 @@ Route::post('/logout', function (Request $request) {
     return redirect()->route('home');
 })->name('logout');
 // Dashboard routes
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('user.home');
 Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('user.dashboard.home');
 
 // Missing routes for footer/header links
-// Auctions page
-Route::get('/auctions', function () {
-    return view('auctions');
-})->name('auctions');
-
 // Contact page
 Route::get('/contacto', \App\Livewire\Pages\Contact::class)->name('contact');
 
@@ -332,12 +335,6 @@ Route::get('/solicitar-produto', \App\Livewire\Pages\ProductRequest::class)->nam
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', \App\Livewire\Pages\Checkout::class)->name('checkout');
-});
-
-// AI Agent Webhooks (públicos - sem auth)
-Route::prefix('webhooks')->name('webhooks.')->group(function () {
-    Route::match(['get', 'post'], '/facebook', [App\Http\Controllers\Admin\AiAgentWebhookController::class, 'facebookWebhook'])->name('facebook');
-    Route::match(['get', 'post'], '/instagram', [App\Http\Controllers\Admin\AiAgentWebhookController::class, 'instagramWebhook'])->name('instagram');
 });
 
 // Include authentication routes

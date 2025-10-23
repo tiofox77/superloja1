@@ -334,6 +334,18 @@
                 @endif
             </a>
 
+            <!-- Carousels -->
+            <a href="{{ route('admin.ai-agent.carousels') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.carousels') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.carousels') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">🎨</span>
+                </div>
+                <span class="font-medium flex-1">Carrosséis</span>
+                @if(request()->routeIs('admin.ai-agent.carousels'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+
             <!-- Knowledge Center -->
             <a href="{{ route('admin.ai-agent.knowledge') }}" 
                class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.knowledge') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
@@ -342,6 +354,18 @@
                 </div>
                 <span class="font-medium flex-1">Centro de Conhecimento</span>
                 @if(request()->routeIs('admin.ai-agent.knowledge'))
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                @endif
+            </a>
+
+            <!-- Diagnostic Logs -->
+            <a href="{{ route('admin.ai-agent.diagnostic-logs') }}" 
+               class="group flex items-center px-4 py-3 text-sm font-medium rounded-2xl mb-2 {{ request()->routeIs('admin.ai-agent.diagnostic-logs') ? 'nav-item-active text-white' : 'nav-item-3d text-white hover:text-white' }}">
+                <div class="flex items-center justify-center w-8 h-8 rounded-xl {{ request()->routeIs('admin.ai-agent.diagnostic-logs') ? 'bg-yellow-400 shadow-lg' : 'bg-white/20' }} mr-3">
+                    <span class="text-lg">🔍</span>
+                </div>
+                <span class="font-medium flex-1">Logs de Diagnóstico</span>
+                @if(request()->routeIs('admin.ai-agent.diagnostic-logs'))
                     <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                 @endif
             </a>
