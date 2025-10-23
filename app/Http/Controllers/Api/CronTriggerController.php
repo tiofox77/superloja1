@@ -149,35 +149,55 @@ class CronTriggerController extends Controller
     /**
      * Disparar criação automática de posts
      * 
-     * GET/POST /api/cron/trigger-create-posts?platform=facebook&limit=3
+     * GET/POST /api/cron/trigger-create-posts
+     * 
+     * Cria automaticamente 10 posts para Instagram E 10 posts para Facebook
+     * Ideal para executar 1x por dia via n8n/cron
      */
     public function triggerCreatePosts(Request $request)
     {
         // API pública - sem autenticação necessária
 
         try {
-            $platform = $request->input('platform', 'facebook');
-            $limit = $request->input('limit', 3);
+            $limit = 10; // Fixo: 10 posts por plataforma
+            $results = [];
 
-            Log::channel('cron')->info('🌐 API Trigger - Criando posts', [
-                'platform' => $platform,
-                'limit' => $limit
+            Log::channel('cron')->info('🌐 API Trigger - Criando posts diários', [
+                'limit_per_platform' => $limit,
+                'platforms' => ['facebook', 'instagram']
             ]);
 
+            // 1️⃣ Criar posts para FACEBOOK
+            Log::channel('cron')->info('📘 Criando posts para Facebook...');
             Artisan::call('ai:auto-create-posts', [
-                '--platform' => $platform,
+                '--platform' => 'facebook',
                 '--limit' => $limit
             ]);
-            $output = Artisan::output();
+            $results['facebook'] = [
+                'output' => trim(Artisan::output()),
+                'limit' => $limit
+            ];
 
-            Log::channel('cron')->info('✅ API Trigger - Posts criados');
+            // 2️⃣ Criar posts para INSTAGRAM
+            Log::channel('cron')->info('📸 Criando posts para Instagram...');
+            Artisan::call('ai:auto-create-posts', [
+                '--platform' => 'instagram',
+                '--limit' => $limit
+            ]);
+            $results['instagram'] = [
+                'output' => trim(Artisan::output()),
+                'limit' => $limit
+            ];
+
+            Log::channel('cron')->info('✅ API Trigger - Posts criados para ambas plataformas');
 
             return response()->json([
                 'success' => true,
-                'message' => 'Posts criados com sucesso',
-                'platform' => $platform,
-                'limit' => $limit,
-                'output' => trim($output),
+                'message' => 'Posts criados com sucesso para Facebook e Instagram',
+                'total_posts_created' => $limit * 2, // 10 Facebook + 10 Instagram = 20 posts
+                'limit_per_platform' => $limit,
+                'platforms' => ['facebook', 'instagram'],
+                'results' => $results,
                 'timestamp' => now()->toIso8601String()
             ]);
 
@@ -196,27 +216,30 @@ class CronTriggerController extends Controller
     /**
      * Disparar criação de carrosséis
      * 
-     * GET/POST /api/cron/trigger-create-carousels?platform=facebook&count=1&products=8
+     * GET/POST /api/cron/trigger-create-carousels
+     * 
+     * Cria automaticamente 3 carrosséis por dia
+     * Ideal para executar 1x por dia via n8n/cron
      */
     public function triggerCreateCarousels(Request $request)
     {
         // API pública - sem autenticação necessária
 
         try {
-            $platform = $request->input('platform', 'facebook');
-            $count = $request->input('count', 1);
-            $products = $request->input('products', 8);
+            $count = 3; // Fixo: 3 carrosséis por dia
+            $productsPerCarousel = 8; // 8 produtos por carrossel
+            $platform = 'facebook'; // Plataforma padrão
 
-            Log::channel('cron')->info('🌐 API Trigger - Criando carrosséis', [
-                'platform' => $platform,
+            Log::channel('cron')->info('🌐 API Trigger - Criando carrosséis diários', [
                 'count' => $count,
-                'products' => $products
+                'products_per_carousel' => $productsPerCarousel,
+                'platform' => $platform
             ]);
 
             Artisan::call('ai:auto-create-carousels', [
                 '--platform' => $platform,
                 '--count' => $count,
-                '--products' => $products
+                '--products' => $productsPerCarousel
             ]);
             $output = Artisan::output();
 
@@ -225,9 +248,9 @@ class CronTriggerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Carrosséis criados com sucesso',
+                'total_carousels' => $count,
+                'products_per_carousel' => $productsPerCarousel,
                 'platform' => $platform,
-                'count' => $count,
-                'products' => $products,
                 'output' => trim($output),
                 'timestamp' => now()->toIso8601String()
             ]);
