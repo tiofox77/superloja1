@@ -60,6 +60,10 @@
                         class="whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm transition-colors duration-200 {{ $activeTab === 'notifications' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     🔔 Notificações
                 </button>
+                <button wire:click="$set('activeTab', 'seo')"
+                        class="whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm transition-colors duration-200 {{ $activeTab === 'seo' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    🎨 SEO & Aparência
+                </button>
             </nav>
         </div>
     </div>
@@ -197,6 +201,184 @@
             </div>
         @endif
 
+        @if($activeTab === 'seo')
+            <!-- SEO & Appearance Settings -->
+            <div class="space-y-6">
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-purple-900 mb-2">🎨 SEO & Aparência do Site</h4>
+                    <p class="text-sm text-purple-800">Configure logo, favicon, meta tags e rastreamento para melhor visibilidade.</p>
+                </div>
+                
+                <!-- Imagens do Site -->
+                <div class="border-t pt-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">📷 Imagens do Site</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- Logo -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Logo do Site
+                                <span class="text-xs text-gray-500 block">PNG/JPG, recomendado 200x60px</span>
+                            </label>
+                            @if(!empty($settings['site_logo']) && $settings['site_logo'] !== '/images/logo.png')
+                                <div class="mb-2 p-4 bg-gray-100 rounded-lg flex justify-center">
+                                    <img src="{{ $settings['site_logo'] }}" alt="Logo" class="max-h-16">
+                                </div>
+                            @endif
+                            <input type="file" 
+                                   wire:model="tempLogo"
+                                   accept="image/png,image/jpeg,image/jpg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            @if($tempLogo)
+                                <p class="text-xs text-green-600 mt-1">✓ Arquivo carregado</p>
+                            @endif
+                        </div>
+
+                        <!-- Favicon -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Favicon
+                                <span class="text-xs text-gray-500 block">ICO/PNG, 32x32px ou 16x16px</span>
+                            </label>
+                            @if(!empty($settings['site_favicon']) && $settings['site_favicon'] !== '/favicon.ico')
+                                <div class="mb-2 p-4 bg-gray-100 rounded-lg flex justify-center">
+                                    <img src="{{ $settings['site_favicon'] }}" alt="Favicon" class="max-h-8">
+                                </div>
+                            @endif
+                            <input type="file" 
+                                   wire:model="tempFavicon"
+                                   accept="image/x-icon,image/png"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            @if($tempFavicon)
+                                <p class="text-xs text-green-600 mt-1">✓ Arquivo carregado</p>
+                            @endif
+                        </div>
+
+                        <!-- OG Image -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Imagem Open Graph
+                                <span class="text-xs text-gray-500 block">Compartilhamento social, 1200x630px</span>
+                            </label>
+                            @if(!empty($settings['og_image']) && $settings['og_image'] !== '/images/og-image.jpg')
+                                <div class="mb-2 p-4 bg-gray-100 rounded-lg flex justify-center">
+                                    <img src="{{ $settings['og_image'] }}" alt="OG Image" class="max-h-16">
+                                </div>
+                            @endif
+                            <input type="file" 
+                                   wire:model="tempOgImage"
+                                   accept="image/jpeg,image/jpg,image/png"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            @if($tempOgImage)
+                                <p class="text-xs text-green-600 mt-1">✓ Arquivo carregado</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meta Tags SEO -->
+                <div class="border-t pt-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">🔍 Meta Tags SEO</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Título SEO
+                                <span class="text-xs text-gray-500 block">Máximo 60 caracteres</span>
+                            </label>
+                            <input type="text" 
+                                   wire:model="settings.seo_title"
+                                   maxlength="60"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                   placeholder="SuperLoja Angola - Sua Loja Online de Confiança">
+                            <p class="text-xs text-gray-500 mt-1">{{ mb_strlen($settings['seo_title'] ?? '') }}/60 caracteres</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Descrição SEO
+                                <span class="text-xs text-gray-500 block">Máximo 160 caracteres</span>
+                            </label>
+                            <textarea wire:model="settings.seo_description"
+                                      maxlength="160"
+                                      rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                      placeholder="Compre produtos de qualidade em Angola com entrega rápida..."></textarea>
+                            <p class="text-xs text-gray-500 mt-1">{{ mb_strlen($settings['seo_description'] ?? '') }}/160 caracteres</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Palavras-chave
+                                <span class="text-xs text-gray-500 block">Separe por vírgula</span>
+                            </label>
+                            <textarea wire:model="settings.seo_keywords"
+                                      rows="2"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                      placeholder="loja online angola, eletrônicos angola, compras online luanda"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rastreamento e Analytics -->
+                <div class="border-t pt-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">📊 Rastreamento e Analytics</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Google Analytics ID
+                                <span class="text-xs text-gray-500 block">Formato: G-XXXXXXXXXX ou UA-XXXXXXXXX-X</span>
+                            </label>
+                            <input type="text" 
+                                   wire:model="settings.google_analytics_id"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                   placeholder="G-XXXXXXXXXX">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Facebook Pixel ID
+                                <span class="text-xs text-gray-500 block">ID do pixel para rastreamento</span>
+                            </label>
+                            <input type="text" 
+                                   wire:model="settings.facebook_pixel_id"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                   placeholder="123456789012345">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div class="border-t pt-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">👁️ Preview de Compartilhamento</h4>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="max-w-lg">
+                            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                                @if(!empty($settings['og_image']))
+                                    <img src="{{ $settings['og_image'] }}" alt="Preview" class="w-full h-48 object-cover">
+                                @else
+                                    <div class="w-full h-48 bg-gradient-to-r from-purple-400 to-blue-500 flex items-center justify-center text-white">
+                                        Imagem OG
+                                    </div>
+                                @endif
+                                <div class="p-4">
+                                    <h5 class="font-semibold text-gray-900 truncate">
+                                        {{ $settings['seo_title'] ?? 'SuperLoja Angola - Sua Loja Online de Confiança' }}
+                                    </h5>
+                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                                        {{ $settings['seo_description'] ?? 'Compre produtos de qualidade em Angola com entrega rápida. Eletrônicos, acessórios e muito mais na SuperLoja.' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-2">superloja.vip</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-3">
+                            <strong>Preview:</strong> Assim sua página aparecerá quando compartilhada no Facebook, WhatsApp, Twitter, etc.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
     </div>
 
     <!-- Help Section -->
@@ -218,6 +400,14 @@
             <div>
                 <h4 class="font-medium text-gray-900 mb-2">💳 Pagamentos</h4>
                 <p>Os dados bancários configurados aparecerão automaticamente no checkout para os clientes.</p>
+            </div>
+            <div>
+                <h4 class="font-medium text-gray-900 mb-2">🎨 SEO & Aparência</h4>
+                <p>Configure logo, favicon e meta tags para melhorar o posicionamento nos motores de busca.</p>
+            </div>
+            <div>
+                <h4 class="font-medium text-gray-900 mb-2">📊 Analytics</h4>
+                <p>Adicione Google Analytics e Facebook Pixel para rastrear visitantes e conversões.</p>
             </div>
         </div>
     </div>

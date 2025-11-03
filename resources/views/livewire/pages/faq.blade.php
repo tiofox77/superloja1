@@ -109,7 +109,7 @@
                     [
                         'category' => 'Atendimento',
                         'question' => 'Como posso entrar em contacto com o suporte?',
-                        'answer' => 'Você pode nos contactar via WhatsApp (+244 939 729 902), e-mail (contato@superloja.ao) ou através do formulário de contacto no site. Atendemos 24/7!'
+                        'answer' => 'Você pode nos contactar via WhatsApp (+244 939 729 902), e-mail (contato@superloja.vip) ou através do formulário de contacto no site. Atendemos 24/7!'
                     ]
                 ];
             @endphp

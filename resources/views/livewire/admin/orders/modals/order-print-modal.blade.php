@@ -188,7 +188,7 @@
                                 <div>
                                     <p class="font-medium text-gray-900">SuperLoja Angola</p>
                                     <p>Luanda, Angola</p>
-                                    <p>contato@superloja.ao</p>
+                                    <p>contato@superloja.vip</p>
                                 </div>
                                 <div>
                                     <p class="font-medium text-gray-900">Suporte</p>

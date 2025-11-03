@@ -6,6 +6,27 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Admin' }} - SuperLoja Admin</title>
     
+    <!-- Favicon -->
+    @php
+        $siteFavicon = \App\Models\Setting::get('site_favicon');
+        if ($siteFavicon && $siteFavicon !== '/favicon.ico') {
+            if (\Illuminate\Support\Str::startsWith($siteFavicon, ['http://', 'https://'])) {
+                $faviconUrl = $siteFavicon;
+            } elseif (\Illuminate\Support\Str::startsWith($siteFavicon, '/storage/')) {
+                $faviconUrl = url($siteFavicon);
+            } elseif (\Illuminate\Support\Str::startsWith($siteFavicon, 'storage/')) {
+                $faviconUrl = url('/' . $siteFavicon);
+            } else {
+                $faviconUrl = asset(ltrim($siteFavicon, '/'));
+            }
+        } else {
+            $faviconUrl = asset('favicon.ico');
+        }
+    @endphp
+    <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ $faviconUrl }}">
+    <link rel="apple-touch-icon" href="{{ $faviconUrl }}">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     

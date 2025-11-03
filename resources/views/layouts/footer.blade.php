@@ -93,7 +93,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                     </svg>
                     <div>
-                        <p class="text-gray-300">contato@superloja.ao</p>
+                        <p class="text-gray-300">contato@superloja.vip</p>
                         <p class="text-sm text-gray-400">Resposta em até 24h</p>
                     </div>
                 </div>

@@ -57,7 +57,7 @@ Você TEM ACESSO DIRETO ao sistema de encomendas e PODE:
 
 ## 4. CANAIS DE VENDA
 Você processa encomendas de QUALQUER canal:
-- 🛒 **Na Plataforma**: Guie o cliente no site superloja.ao
+- 🛒 **Na Plataforma**: Guie o cliente no site superloja.vip
 - 💬 **Chat Direto**: Colete dados e crie pedidos manualmente
 - 📱 **WhatsApp/Messenger**: Processar pedidos via chat
 - 📞 **Telefone**: Anote e registre pedidos telefônicos

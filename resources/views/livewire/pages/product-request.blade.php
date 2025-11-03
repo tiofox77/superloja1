@@ -304,7 +304,7 @@
                         <span class="text-blue-600 mr-3">📧</span>
                         <div>
                             <p class="font-medium">Email</p>
-                            <p class="text-sm text-gray-500">contato@superloja.ao</p>
+                            <p class="text-sm text-gray-500">contato@superloja.vip</p>
                         </div>
                     </div>
                     <div class="flex items-center text-gray-700">

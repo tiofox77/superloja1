@@ -93,7 +93,7 @@
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900 mb-1">Email</h3>
-                                <p class="text-gray-600">info@superloja.ao<br>suporte@superloja.ao</p>
+                                <p class="text-gray-600">info@superloja.vip<br>suporte@superloja.vip</p>
                             </div>
                         </div>
                         

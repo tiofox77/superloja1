@@ -103,34 +103,25 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
-                    <input type="text" wire:model.live="search" placeholder="Nome da categoria..." 
+                    <input type="text" wire:model.live.debounce.500ms="search" placeholder="Nome da categoria..." 
                            class="input-3d pl-10 pr-4 py-2 w-full">
                 </div>
             </div>
             
             <div class="space-y-1">
-                <label class="block text-sm font-medium text-gray-700">Status</label>
+                <label class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                    <svg class="w-4 h-4 mr-1.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    Filtrar Visualização
+                </label>
                 <div class="relative">
-                    <select wire:model.live="filterStatus" class="input-3d w-full appearance-none px-4 py-2 pr-10">
-                        <option value="">Todos</option>
-                        <option value="1">Ativas</option>
-                        <option value="0">Inativas</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div class="space-y-1">
-                <label class="block text-sm font-medium text-gray-700">Tipo</label>
-                <div class="relative">
-                    <select wire:model.live="filterType" class="input-3d w-full appearance-none px-4 py-2 pr-10">
-                        <option value="">Todas</option>
-                        <option value="parent">Principais</option>
-                        <option value="child">Subcategorias</option>
+                    <select wire:model.live="filter" class="input-3d w-full appearance-none px-4 py-2 pr-10 font-medium">
+                        <option value="">🔍 Todas as Categorias</option>
+                        <option value="parent">📁 Apenas Principais</option>
+                        <option value="child">📂 Apenas Subcategorias</option>
+                        <option value="active">✅ Ativas</option>
+                        <option value="inactive">❌ Inativas</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,6 +256,17 @@
                                            wire:model.live="selectedCategories" 
                                            value="{{ $category->id }}" 
                                            class="checkbox-modern checkbox-success">
+                                    
+                                    <!-- Indentação para subcategorias -->
+                                    @if($category->parent_id)
+                                        <div class="flex items-center text-gray-400 mr-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                            <span class="text-xs ml-1">└─</span>
+                                        </div>
+                                    @endif
+                                    
                                     <div class="flex items-center">
                                         @if($category->icon)
                                             <span class="text-2xl mr-3">{{ $category->icon }}</span>
@@ -273,8 +275,15 @@
                                                  style="background-color: {{ $category->color ?? '#6366f1' }}"></div>
                                         @endif
                                         <div>
-                                            <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
-                                                {{ $category->name }}
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+                                                    {{ $category->name }}
+                                                </span>
+                                                @if(!$category->parent_id && $category->children_count > 0)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                        {{ $category->children_count }} sub
+                                                    </span>
+                                                @endif
                                             </div>
                                             @if($category->description)
                                                 <div class="text-xs text-gray-500">{{ Str::limit($category->description, 50) }}</div>
@@ -338,7 +347,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </button>
-                                    <button wire:click="confirmDelete({{ $category->id }}, '{{ $category->name }}')"
+                                    <button wire:click="confirmDelete({{ $category->id }}, {{ json_encode($category->name) }})"
                                             class="inline-flex items-center p-2 rounded-lg text-red-600 hover:text-white hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="Remover categoria">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

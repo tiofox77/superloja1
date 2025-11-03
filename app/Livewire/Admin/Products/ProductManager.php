@@ -30,7 +30,8 @@ class ProductManager extends Component
     public $sale_price = '';
     public $stock_quantity = '';
     public $sku = '';
-    public $category_id = '';
+    public $parent_category_id = ''; // Categoria principal
+    public $category_id = ''; // Subcategoria (salva no produto)
     public $brand_id = '';
     public $is_active = true;
     public $is_featured = false;
@@ -88,12 +89,69 @@ class ProductManager extends Component
         'variants.*.images.*' => 'nullable|image|max:2048',
     ];
 
+    protected $messages = [
+        'name.required' => 'O nome do produto é obrigatório.',
+        'name.min' => 'O nome deve ter no mínimo 3 caracteres.',
+        'name.max' => 'O nome não pode ter mais de 255 caracteres.',
+        'description.required' => 'A descrição é obrigatória.',
+        'description.min' => 'A descrição deve ter no mínimo 10 caracteres.',
+        'description.max' => 'A descrição não pode ter mais de 2000 caracteres.',
+        'price.required' => 'O preço é obrigatório.',
+        'price.numeric' => 'O preço deve ser um número válido.',
+        'price.min' => 'O preço deve ser maior que zero.',
+        'sale_price.numeric' => 'O preço promocional deve ser um número válido.',
+        'sale_price.min' => 'O preço promocional deve ser maior ou igual a zero.',
+        'sale_price.lt' => 'O preço promocional deve ser menor que o preço normal.',
+        'stock_quantity.required' => 'A quantidade em estoque é obrigatória.',
+        'stock_quantity.integer' => 'A quantidade deve ser um número inteiro.',
+        'stock_quantity.min' => 'A quantidade não pode ser negativa.',
+        'sku.required' => 'O código SKU é obrigatório.',
+        'sku.min' => 'O SKU deve ter no mínimo 3 caracteres.',
+        'sku.max' => 'O SKU não pode ter mais de 100 caracteres.',
+        'sku.unique' => 'Este SKU já está em uso por outro produto.',
+        'category_id.required' => 'Selecione uma categoria.',
+        'category_id.exists' => 'Categoria inválida.',
+        'brand_id.exists' => 'Marca inválida.',
+        'weight.numeric' => 'O peso deve ser um número válido.',
+        'weight.min' => 'O peso não pode ser negativo.',
+        'length.numeric' => 'O comprimento deve ser um número válido.',
+        'length.min' => 'O comprimento não pode ser negativo.',
+        'width.numeric' => 'A largura deve ser um número válido.',
+        'width.min' => 'A largura não pode ser negativa.',
+        'height.numeric' => 'A altura deve ser um número válido.',
+        'height.min' => 'A altura não pode ser negativa.',
+        'image.image' => 'O arquivo deve ser uma imagem.',
+        'image.max' => 'A imagem não pode ter mais de 2MB.',
+        'gallery.*.image' => 'Os arquivos da galeria devem ser imagens.',
+        'gallery.*.max' => 'Cada imagem da galeria não pode ter mais de 2MB.',
+    ];
+
     protected $queryString = ['search', 'filterCategory', 'filterBrand', 'filterStatus', 'sortBy', 'sortDirection'];
 
     public function mount(): void
     {
         $this->resetPage();
         $this->updateSelectAllState();
+    }
+
+    // Método chamado quando a categoria pai muda
+    public function updatedParentCategoryId()
+    {
+        // Limpar subcategoria quando mudar a categoria pai
+        $this->category_id = '';
+    }
+
+    // Retorna subcategorias da categoria pai selecionada
+    public function getSubcategoriesProperty()
+    {
+        if (empty($this->parent_category_id)) {
+            return collect();
+        }
+
+        return Category::where('parent_id', $this->parent_category_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
     }
 
     public function render()
@@ -107,7 +165,19 @@ class ProductManager extends Component
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(15);
 
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        // Carregar apenas categorias PRINCIPAIS (sem parent_id)
+        $parentCategories = Category::where('is_active', true)
+            ->whereNull('parent_id')
+            ->orderBy('name', 'asc')
+            ->get();
+        
+        // Para o filtro, carregar todas as categorias hierarquicamente
+        $allCategories = Category::where('is_active', true)
+            ->orderByRaw('CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END')
+            ->orderBy('parent_id', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
+            
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
 
         $stats = [
@@ -122,7 +192,8 @@ class ProductManager extends Component
 
         return view('livewire.admin.products.product-manager', [
             'products' => $products,
-            'categories' => $categories,
+            'parentCategories' => $parentCategories,
+            'categories' => $allCategories, // Para o filtro
             'brands' => $brands,
             'stats' => $stats,
         ])->layout('components.layouts.admin', [
@@ -178,6 +249,9 @@ class ProductManager extends Component
         }
 
         try {
+            // Determinar qual categoria usar: subcategoria se existir, senão categoria pai
+            $finalCategoryId = !empty($this->category_id) ? $this->category_id : $this->parent_category_id;
+            
             $productData = [
                 'name' => $this->name,
                 'slug' => \Str::slug($this->name),
@@ -186,7 +260,7 @@ class ProductManager extends Component
                 'sale_price' => $this->sale_price ? (float)$this->sale_price : null,
                 'stock_quantity' => (int)($this->stock_quantity ?: 0),
                 'sku' => $this->sku,
-                'category_id' => (int)$this->category_id,
+                'category_id' => (int)$finalCategoryId,
                 'brand_id' => $this->brand_id ? (int)$this->brand_id : null,
                 'is_active' => (bool)$this->is_active,
                 'is_featured' => (bool)$this->is_featured,
@@ -337,7 +411,7 @@ class ProductManager extends Component
 
     private function loadProduct($productId): void
     {
-        $product = Product::findOrFail($productId);
+        $product = Product::with('category')->findOrFail($productId);
 
         $this->name = $product->name;
         $this->description = $product->description ?? '';
@@ -353,6 +427,14 @@ class ProductManager extends Component
         $this->length = $product->length;
         $this->width = $product->width;
         $this->height = $product->height;
+        
+        // Carregar a categoria pai se a categoria do produto for uma subcategoria
+        if ($product->category && $product->category->parent_id) {
+            $this->parent_category_id = $product->category->parent_id;
+        } else {
+            $this->parent_category_id = $product->category_id; // É categoria principal
+            $this->category_id = ''; // Limpar subcategoria
+        }
         
         // Carregar imagens da galeria existentes (não são uploads do Livewire)
         // Estas são apenas para visualização no modo de edição
@@ -370,6 +452,7 @@ class ProductManager extends Component
         $this->sale_price = '';
         $this->stock_quantity = '';
         $this->sku = '';
+        $this->parent_category_id = '';
         $this->category_id = '';
         $this->brand_id = '';
         $this->is_active = true;
@@ -634,6 +717,9 @@ class ProductManager extends Component
         }
 
         try {
+            // Determinar qual categoria usar: subcategoria se existir, senão categoria pai
+            $finalCategoryId = !empty($this->category_id) ? $this->category_id : $this->parent_category_id;
+            
             $productData = [
                 'name' => $this->name,
                 'slug' => \Str::slug($this->name),
@@ -642,7 +728,7 @@ class ProductManager extends Component
                 'sale_price' => $this->sale_price ? (float)$this->sale_price : null,
                 'stock_quantity' => (int)($this->stock_quantity ?: 0),
                 'sku' => $this->sku,
-                'category_id' => (int)$this->category_id,
+                'category_id' => (int)$finalCategoryId,
                 'brand_id' => $this->brand_id ? (int)$this->brand_id : null,
                 'is_active' => (bool)$this->is_active,
                 'is_featured' => (bool)$this->is_featured,

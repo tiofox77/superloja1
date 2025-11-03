@@ -56,19 +56,19 @@ class AiAgentService
         $salesData = $this->getProductSalesData($product->id);
         
         // Calcular métricas
-        $totalSales = $salesData['total_sales'];
-        $totalRevenue = $salesData['total_revenue'];
-        $totalViews = $product->view_count ?? 0;
+        $totalSales = (int) $salesData['total_sales'];
+        $totalRevenue = (float) $salesData['total_revenue'];
+        $totalViews = (int) ($product->view_count ?? 0);
         
         $conversionRate = $totalViews > 0 
             ? round(($totalSales / $totalViews) * 100, 2) 
-            : 0;
+            : 0.0;
 
         // Determinar status de performance
         $performanceStatus = $this->calculatePerformanceStatus(
             $totalSales,
             $totalRevenue,
-            $conversionRate
+            (float) $conversionRate
         );
 
         // Gerar recomendações da IA
@@ -115,9 +115,9 @@ class AiAgentService
             ->first();
 
         return [
-            'total_sales' => $data->total_sales ?? 0,
-            'total_revenue' => $data->total_revenue ?? 0,
-            'avg_price' => $data->avg_price ?? 0,
+            'total_sales' => (int) ($data->total_sales ?? 0),
+            'total_revenue' => (float) ($data->total_revenue ?? 0),
+            'avg_price' => (float) ($data->avg_price ?? 0),
         ];
     }
 

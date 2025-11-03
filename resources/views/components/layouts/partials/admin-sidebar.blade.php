@@ -3,16 +3,48 @@
     
     <!-- Logo Section -->
     <div class="flex items-center h-16 px-6 animate-fade-in-scale">
+        @php
+            $siteLogo = \App\Models\Setting::get('site_logo');
+            $appName = \App\Models\Setting::get('app_name', 'SuperLoja');
+            
+            // Verificar se existe um logo personalizado
+            $hasCustomLogo = !empty($siteLogo) && $siteLogo !== '/images/logo.png';
+            $logoUrl = '';
+            
+            if ($hasCustomLogo) {
+                // Se já começa com http:// ou https://, usar direto
+                if (\Illuminate\Support\Str::startsWith($siteLogo, ['http://', 'https://'])) {
+                    $logoUrl = $siteLogo;
+                } 
+                // Se começa com /storage/, usar url() para gerar URL completa
+                elseif (\Illuminate\Support\Str::startsWith($siteLogo, '/storage/')) {
+                    $logoUrl = url($siteLogo);
+                }
+                // Se começa com storage/ (sem barra), adicionar barra e usar url()
+                elseif (\Illuminate\Support\Str::startsWith($siteLogo, 'storage/')) {
+                    $logoUrl = url('/' . $siteLogo);
+                }
+                // Para qualquer outro caminho, usar asset()
+                else {
+                    $logoUrl = asset(ltrim($siteLogo, '/'));
+                }
+            }
+        @endphp
         <div class="flex items-center">
             <div class="flex-shrink-0">
-                <div class="h-12 w-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg animate-float">
+                @if($hasCustomLogo)
+                    <div class="h-12 w-12 rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-lg">
+                        <img src="{{ $logoUrl }}" alt="{{ $appName }}" class="max-h-10 object-contain" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+                    </div>
+                @endif
+                <div class="h-12 w-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg animate-float" style="{{ $hasCustomLogo ? 'display: none;' : '' }}">
                     <svg class="h-7 w-7 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
             </div>
             <div class="ml-4">
-                <h1 class="text-xl font-bold text-white drop-shadow-lg">SuperLoja</h1>
+                <h1 class="text-xl font-bold text-white drop-shadow-lg">{{ $appName }}</h1>
                 <p class="text-sm text-white opacity-80">Admin Panel</p>
             </div>
         </div>

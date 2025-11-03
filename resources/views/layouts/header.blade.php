@@ -5,21 +5,62 @@
             
             <!-- Logo Section -->
             <div class="flex items-center space-x-3">
+                @php
+                    $siteLogo = \App\Models\Setting::get('site_logo');
+                    $appName = \App\Models\Setting::get('app_name', 'SuperLoja');
+                    $appDesc = \App\Models\Setting::get('app_description', 'Sua loja online de confiança em Angola');
+                    
+                    // Verificar se existe um logo personalizado (não default)
+                    $hasCustomLogo = !empty($siteLogo) && $siteLogo !== '/images/logo.png';
+                    $logoUrl = '';
+                    
+                    if ($hasCustomLogo) {
+                        // Se já começa com http:// ou https://, usar direto
+                        if (\Illuminate\Support\Str::startsWith($siteLogo, ['http://', 'https://'])) {
+                            $logoUrl = $siteLogo;
+                        } 
+                        // Se começa com /storage/, usar url() para gerar URL completa
+                        elseif (\Illuminate\Support\Str::startsWith($siteLogo, '/storage/')) {
+                            $logoUrl = url($siteLogo);
+                        }
+                        // Se começa com storage/ (sem barra), adicionar barra e usar url()
+                        elseif (\Illuminate\Support\Str::startsWith($siteLogo, 'storage/')) {
+                            $logoUrl = url('/' . $siteLogo);
+                        }
+                        // Para qualquer outro caminho, usar asset()
+                        else {
+                            $logoUrl = asset(ltrim($siteLogo, '/'));
+                        }
+                    }
+                @endphp
                 <a href="{{ route('home') }}" class="flex items-center space-x-3 group">
-                    <div class="relative">
-                        <div class="bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 text-white p-3 rounded-2xl shadow-lg transform group-hover:scale-105 transition-all duration-300">
-                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M7 4V2C7 1.45 7.45 1 8 1H16C16.55 1 17 1.45 17 2V4H20C20.55 4 21 4.45 21 5S20.55 6 20 6H19V19C19 20.1 18.1 21 17 21H7C5.9 21 5 20.1 5 19V6H4C3.45 6 3 5.55 3 5S3.45 4 4 4H7ZM9 3V4H15V3H9ZM7 6V19H17V6H7Z"/>
-                                <path d="M9 8V17H11V8H9ZM13 8V17H15V8H13Z"/>
-                            </svg>
+                    @if($hasCustomLogo)
+                        <!-- Logo Personalizado (Desktop e Mobile) -->
+                        <div class="relative">
+                            <div class="bg-white p-3 rounded-2xl shadow-lg transform group-hover:scale-105 transition-all duration-300">
+                                <img src="{{ $logoUrl }}" alt="{{ $appName }}" class="h-14 sm:h-16 md:h-20 w-auto max-w-[200px] sm:max-w-[250px] md:max-w-[300px] object-contain" onerror="this.parentElement.parentElement.style.display='none'; this.parentElement.parentElement.nextElementSibling.style.display='flex';">
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
                         </div>
-                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
-                    </div>
-                    <div class="hidden sm:block">
-                        <h1 class="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                            SuperLoja
-                        </h1>
-                        <p class="text-xs text-gray-500 font-medium">Angola</p>
+                    @endif
+                    
+                    <!-- Fallback: Ícone + Texto (quando não há logo) -->
+                    <div class="flex items-center space-x-3" style="{{ $hasCustomLogo ? 'display: none;' : '' }}">
+                        <div class="relative">
+                            <div class="bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 text-white p-3 rounded-2xl shadow-lg transform group-hover:scale-105 transition-all duration-300">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 4V2C7 1.45 7.45 1 8 1H16C16.55 1 17 1.45 17 2V4H20C20.55 4 21 4.45 21 5S20.55 6 20 6H19V19C19 20.1 18.1 21 17 21H7C5.9 21 5 20.1 5 19V6H4C3.45 6 3 5.55 3 5S3.45 4 4 4H7ZM9 3V4H15V3H9ZM7 6V19H17V6H7Z"/>
+                                    <path d="M9 8V17H11V8H9ZM13 8V17H15V8H13Z"/>
+                                </svg>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
+                        </div>
+                        <div class="hidden sm:block">
+                            <h1 class="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                                {{ $appName }}
+                            </h1>
+                            <p class="text-xs text-gray-500 font-medium">{{ $appDesc }}</p>
+                        </div>
                     </div>
                 </a>
             </div>

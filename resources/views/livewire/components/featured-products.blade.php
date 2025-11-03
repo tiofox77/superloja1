@@ -17,11 +17,10 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm">
                         <option value="">Todas Categorias</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category }}">{{ $category }}</option>
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
                     </select>
-                </div>
-                
+                </div>                
                 <!-- Price Range -->
                 <div class="min-w-[150px]">
                     <select wire:model.live="priceRange" 
@@ -64,14 +63,21 @@
                 <!-- Product Image -->
                 <div class="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden group">
                     @if($product->featured_image)
-                        <img src="{{ Storage::url($product->featured_image) }}" 
+                        @php
+                            $imageUrl = \Illuminate\Support\Str::startsWith($product->featured_image, ['http://', 'https://'])
+                                ? $product->featured_image
+                                : (\Illuminate\Support\Str::startsWith($product->featured_image, '/storage/')
+                                    ? url($product->featured_image)
+                                    : asset('storage/' . ltrim($product->featured_image, '/')));
+                        @endphp
+                        <img src="{{ $imageUrl }}" 
                              alt="{{ $product->name }}" 
-                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                    @else
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
+                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     @endif
+                    <svg class="w-12 h-12 text-gray-400 {{ $product->featured_image ? 'hidden' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
                     
                     <!-- Discount Badge -->
                     @if($product->sale_price && $product->sale_price > 0)

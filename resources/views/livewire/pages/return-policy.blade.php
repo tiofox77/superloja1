@@ -363,7 +363,7 @@
             <div class="mt-6 text-orange-100">
                 <p class="text-sm">
                     📍 <strong>Atendimento:</strong> Segunda a Sexta 8h-18h, Sábado 8h-14h<br>
-                    📧 <strong>Email:</strong> contato@superloja.ao
+                    📧 <strong>Email:</strong> contato@superloja.vip
                 </p>
             </div>
         </div>

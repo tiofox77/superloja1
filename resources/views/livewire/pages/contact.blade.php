@@ -73,8 +73,8 @@
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900">Email</h3>
-                                <p class="text-gray-600">contato@superloja.ao</p>
-                                <a href="mailto:contato@superloja.ao" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                                <p class="text-gray-600">contato@superloja.vip</p>
+                                <a href="mailto:contato@superloja.vip" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
                                     Enviar Email →
                                 </a>
                             </div>

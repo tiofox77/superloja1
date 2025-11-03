@@ -156,7 +156,9 @@
                     <select wire:model.live="filterCategory" class="input-3d w-full appearance-none px-4 py-2 pr-10">
                         <option value="">Todas as categorias</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            <option value="{{ $category->id }}">
+                                {{ $category->parent_id ? '  ├─ ' : '' }}{{ $category->name }}
+                            </option>
                         @endforeach
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">

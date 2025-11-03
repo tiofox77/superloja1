@@ -234,19 +234,51 @@
                                 <h4 class="text-lg font-bold text-gray-900">Categoria e Marca</h4>
                             </div>
                             
-                            <!-- Categoria -->
+                            <!-- Categoria Principal -->
                             <div class="mb-4">
                                 <label class="flex items-center text-sm font-medium text-gray-700 mb-2">
                                     <svg class="w-4 h-4 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                     </svg>
-                                    Categoria *
+                                    Categoria Principal *
                                 </label>
                                 <div class="relative">
-                                    <select wire:model="category_id" class="input-3d w-full px-4 py-2 pr-10 appearance-none @error('category_id') border-red-500 @enderror" required>
-                                        <option value="">Selecione uma categoria</option>
-                                        @foreach($categories as $category)
+                                    <select wire:model.live="parent_category_id" class="input-3d w-full px-4 py-2 pr-10 appearance-none @error('parent_category_id') border-red-500 @enderror" required>
+                                        <option value="">Selecione a categoria principal</option>
+                                        @foreach($parentCategories as $category)
                                             <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                @error('parent_category_id')
+                                    <p class="mt-1 text-sm text-red-600 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            <!-- Subcategoria (opcional) -->
+                            @if($parent_category_id && count($this->subcategories) > 0)
+                            <div class="mb-4">
+                                <label class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                    <svg class="w-4 h-4 mr-2 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    Subcategoria <span class="text-gray-400 text-xs">(Opcional)</span>
+                                </label>
+                                <div class="relative">
+                                    <select wire:model="category_id" class="input-3d w-full px-4 py-2 pr-10 appearance-none @error('category_id') border-red-500 @enderror">
+                                        <option value="">Nenhuma subcategoria</option>
+                                        @foreach($this->subcategories as $subcategory)
+                                            <option value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
                                         @endforeach
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
@@ -264,6 +296,7 @@
                                     </p>
                                 @enderror
                             </div>
+                            @endif
                             
                             <!-- Marca -->
                             <div>

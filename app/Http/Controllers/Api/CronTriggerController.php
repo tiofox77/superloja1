@@ -151,7 +151,9 @@ class CronTriggerController extends Controller
      * 
      * GET/POST /api/cron/trigger-create-posts
      * 
-     * Cria automaticamente 10 posts para Instagram E 10 posts para Facebook
+     * Padrão: Cria automaticamente 10 posts para Instagram E 10 posts para Facebook
+     * Com parâmetros: ?platform=facebook&limit=5 (para compatibilidade com workflows antigos)
+     * 
      * Ideal para executar 1x por dia via n8n/cron
      */
     public function triggerCreatePosts(Request $request)
@@ -159,9 +161,40 @@ class CronTriggerController extends Controller
         // API pública - sem autenticação necessária
 
         try {
-            $limit = 10; // Fixo: 10 posts por plataforma
+            // Parâmetros opcionais (compatibilidade com workflows antigos)
+            $platform = $request->input('platform'); // null = ambas plataformas
+            $limit = $request->input('limit', 10); // padrão: 10 posts
             $results = [];
 
+            // Se plataforma específica foi solicitada
+            if ($platform && in_array($platform, ['facebook', 'instagram'])) {
+                Log::channel('cron')->info('🌐 API Trigger - Criando posts', [
+                    'platform' => $platform,
+                    'limit' => $limit
+                ]);
+
+                Artisan::call('ai:auto-create-posts', [
+                    '--platform' => $platform,
+                    '--limit' => $limit
+                ]);
+                
+                $results[$platform] = [
+                    'output' => trim(Artisan::output()),
+                    'limit' => $limit
+                ];
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Posts criados com sucesso para {$platform}",
+                    'total_posts_created' => $limit,
+                    'platform' => $platform,
+                    'limit' => $limit,
+                    'results' => $results,
+                    'timestamp' => now()->toIso8601String()
+                ]);
+            }
+
+            // Sem plataforma especificada = criar para AMBAS (comportamento novo)
             Log::channel('cron')->info('🌐 API Trigger - Criando posts diários', [
                 'limit_per_platform' => $limit,
                 'platforms' => ['facebook', 'instagram']
@@ -218,7 +251,10 @@ class CronTriggerController extends Controller
      * 
      * GET/POST /api/cron/trigger-create-carousels
      * 
-     * Cria automaticamente 3 carrosséis por dia
+     * Padrão: Cria 3 carrosséis para Facebook com horários automáticos
+     * Com horários: ?count=3&times=10:00,14:00,18:00 (define horários específicos)
+     * Com parâmetros: ?platform=facebook&count=3&products=8
+     * 
      * Ideal para executar 1x por dia via n8n/cron
      */
     public function triggerCreateCarousels(Request $request)
@@ -226,16 +262,25 @@ class CronTriggerController extends Controller
         // API pública - sem autenticação necessária
 
         try {
-            $count = 3; // Fixo: 3 carrosséis por dia
-            $productsPerCarousel = 8; // 8 produtos por carrossel
-            $platform = 'facebook'; // Plataforma padrão
+            // Parâmetros opcionais
+            $platform = $request->input('platform', 'facebook');
+            $count = $request->input('count', 3);
+            $productsPerCarousel = $request->input('products', 8);
+            $customTimes = $request->input('times'); // Ex: "10:00,14:00,18:00"
 
-            Log::channel('cron')->info('🌐 API Trigger - Criando carrosséis diários', [
+            Log::channel('cron')->info('🌐 API Trigger - Criando carrosséis', [
                 'count' => $count,
                 'products_per_carousel' => $productsPerCarousel,
-                'platform' => $platform
+                'platform' => $platform,
+                'custom_times' => $customTimes
             ]);
 
+            // Se horários personalizados foram fornecidos
+            if ($customTimes) {
+                return $this->createCarouselsWithCustomTimes($platform, $count, $productsPerCarousel, $customTimes);
+            }
+
+            // Comportamento padrão: usar comando artisan com horários automáticos
             Artisan::call('ai:auto-create-carousels', [
                 '--platform' => $platform,
                 '--count' => $count,
@@ -265,6 +310,95 @@ class CronTriggerController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Criar carrosséis com horários personalizados
+     */
+    private function createCarouselsWithCustomTimes($platform, $count, $productsPerCarousel, $timesString)
+    {
+        $times = array_map('trim', explode(',', $timesString));
+        $socialMedia = app(SocialMediaAgentService::class);
+        $created = [];
+
+        foreach (array_slice($times, 0, $count) as $time) {
+            try {
+                // Buscar produtos HOT
+                $hotProducts = \App\Models\AiProductInsight::with('product')
+                    ->hotProducts()
+                    ->whereHas('product', function($query) {
+                        $query->where('is_active', true)
+                              ->whereNotNull('featured_image')
+                              ->where('stock_quantity', '>', 0);
+                    })
+                    ->inRandomOrder()
+                    ->limit($productsPerCarousel * 2)
+                    ->get()
+                    ->pluck('product')
+                    ->filter()
+                    ->unique('id')
+                    ->take($productsPerCarousel);
+
+                if ($hotProducts->count() < $productsPerCarousel) {
+                    // Fallback: produtos aleatórios
+                    $products = \App\Models\Product::where('is_active', true)
+                        ->whereNotNull('featured_image')
+                        ->where('stock_quantity', '>', 0)
+                        ->inRandomOrder()
+                        ->limit($productsPerCarousel)
+                        ->get();
+                } else {
+                    $products = $hotProducts;
+                }
+
+                if ($products->count() < 3) {
+                    continue; // Mínimo 3 produtos por carrossel
+                }
+
+                // Gerar conteúdo do carrossel
+                $postData = $socialMedia->generateCarouselPostContent($products, $platform);
+
+                // Parse do horário
+                [$hour, $minute] = explode(':', $time);
+                $scheduledTime = now()->setTime((int)$hour, (int)$minute);
+                
+                if ($scheduledTime->isPast()) {
+                    $scheduledTime->addDay();
+                }
+
+                // Criar carrossel
+                $post = \App\Models\AiAutoPost::create([
+                    'platform' => $platform,
+                    'post_type' => 'carousel',
+                    'product_id' => null,
+                    'product_ids' => $products->pluck('id')->toArray(),
+                    'content' => $postData['message'],
+                    'media_urls' => $postData['media_urls'],
+                    'hashtags' => $postData['hashtags'],
+                    'status' => 'scheduled',
+                    'scheduled_for' => $scheduledTime,
+                ]);
+
+                $created[] = [
+                    'id' => $post->id,
+                    'products_count' => $products->count(),
+                    'scheduled_for' => $scheduledTime->format('d/m/Y H:i'),
+                ];
+
+            } catch (\Exception $e) {
+                Log::error('Erro ao criar carrossel', ['error' => $e->getMessage(), 'time' => $time]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Carrosséis criados com horários personalizados',
+            'total_carousels' => count($created),
+            'products_per_carousel' => $productsPerCarousel,
+            'platform' => $platform,
+            'carousels' => $created,
+            'timestamp' => now()->toIso8601String()
+        ]);
     }
 
     /**

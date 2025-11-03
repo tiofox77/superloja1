@@ -3,17 +3,29 @@
 namespace App\Livewire\Admin\Settings;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\Setting;
 use App\Services\SmsService;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsManager extends Component
 {
+    use WithFileUploads;
+    
     public $activeTab = 'general';
     public $settings = [];
     public $saving = false;
+    
+    // Temporários para upload de imagens
+    public $tempLogo;
+    public $tempFavicon;
+    public $tempOgImage;
 
     protected $rules = [
-        'settings.*' => 'nullable'
+        'settings.*' => 'nullable',
+        'tempLogo' => 'nullable|image|max:2048',
+        'tempFavicon' => 'nullable|image|max:512',
+        'tempOgImage' => 'nullable|image|max:4096',
     ];
 
     public function mount()
@@ -80,7 +92,7 @@ class SettingsManager extends Component
                     'label' => 'Email de Contacto',
                     'description' => 'Email principal da empresa',
                     'type' => 'string',
-                    'default' => 'contato@superloja.ao'
+                    'default' => 'contato@superloja.vip'
                 ],
                 'company_address' => [
                     'label' => 'Endereço da Empresa',
@@ -147,7 +159,57 @@ class SettingsManager extends Component
                     'label' => 'Email do Administrador',
                     'description' => 'Email para receber notificações importantes',
                     'type' => 'string',
-                    'default' => 'admin@superloja.ao'
+                    'default' => 'admin@superloja.vip'
+                ]
+            ],
+            'seo' => [
+                'site_logo' => [
+                    'label' => 'Logo do Site',
+                    'description' => 'Logo principal do site (formato PNG/JPG, recomendado 200x60px)',
+                    'type' => 'image',
+                    'default' => '/images/logo.png'
+                ],
+                'site_favicon' => [
+                    'label' => 'Favicon',
+                    'description' => 'Ícone do site (formato ICO/PNG, 32x32px ou 16x16px)',
+                    'type' => 'image',
+                    'default' => '/favicon.ico'
+                ],
+                'seo_title' => [
+                    'label' => 'Título SEO',
+                    'description' => 'Título padrão para páginas (máx. 60 caracteres)',
+                    'type' => 'string',
+                    'default' => 'SuperLoja Angola - Sua Loja Online de Confiança'
+                ],
+                'seo_description' => [
+                    'label' => 'Descrição SEO',
+                    'description' => 'Descrição padrão para mecanismos de busca (máx. 160 caracteres)',
+                    'type' => 'textarea',
+                    'default' => 'Compre produtos de qualidade em Angola com entrega rápida. Eletrônicos, acessórios e muito mais na SuperLoja.'
+                ],
+                'seo_keywords' => [
+                    'label' => 'Palavras-chave SEO',
+                    'description' => 'Palavras-chave separadas por vírgula',
+                    'type' => 'textarea',
+                    'default' => 'loja online angola, eletrônicos angola, compras online luanda, superloja, acessórios angola'
+                ],
+                'google_analytics_id' => [
+                    'label' => 'Google Analytics ID',
+                    'description' => 'ID de rastreamento do Google Analytics (ex: G-XXXXXXXXXX)',
+                    'type' => 'string',
+                    'default' => ''
+                ],
+                'facebook_pixel_id' => [
+                    'label' => 'Facebook Pixel ID',
+                    'description' => 'ID do Facebook Pixel para rastreamento',
+                    'type' => 'string',
+                    'default' => ''
+                ],
+                'og_image' => [
+                    'label' => 'Imagem Open Graph',
+                    'description' => 'Imagem padrão para compartilhamento em redes sociais (1200x630px)',
+                    'type' => 'image',
+                    'default' => '/images/og-image.jpg'
                 ]
             ]
         ];
@@ -158,6 +220,25 @@ class SettingsManager extends Component
         $this->saving = true;
         
         try {
+            // Processar uploads de imagens
+            if ($this->tempLogo) {
+                $path = $this->tempLogo->store('settings', 'public');
+                $this->settings['site_logo'] = '/storage/' . $path;
+                $this->tempLogo = null;
+            }
+            
+            if ($this->tempFavicon) {
+                $path = $this->tempFavicon->store('settings', 'public');
+                $this->settings['site_favicon'] = '/storage/' . $path;
+                $this->tempFavicon = null;
+            }
+            
+            if ($this->tempOgImage) {
+                $path = $this->tempOgImage->store('settings', 'public');
+                $this->settings['og_image'] = '/storage/' . $path;
+                $this->tempOgImage = null;
+            }
+            
             $defaultSettings = $this->getDefaultSettings();
             
             foreach ($this->settings as $key => $value) {

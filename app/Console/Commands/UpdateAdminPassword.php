@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 class UpdateAdminPassword extends Command
 {
     protected $signature = 'admin:update-password 
-                            {email=admin@superloja.ao : Email do administrador}
+                            {email=admin@superloja.vip : Email do administrador}
                             {password=Admin2017 : Nova senha}';
 
     protected $description = 'Atualizar senha do administrador';

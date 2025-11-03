@@ -197,7 +197,7 @@ A aplicação estará disponível em `http://localhost:8000`
 
 ### 📞 Contacto
 - **Telefone/WhatsApp**: +244 939 729 902
-- **Email**: contato@superloja.ao
+- **Email**: contato@superloja.vip
 - **Localização**: Kilamba J13, Luanda, Angola
 
 ### 🕐 Horário de Funcionamento

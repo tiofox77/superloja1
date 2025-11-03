@@ -1,27 +1,31 @@
 {{-- Modal: CategoryForm Livewire (DO NOT RENAME) --}}
 <div x-show="$wire.showModal" x-cloak
-     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] overflow-y-auto py-6"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="opacity-100"
-     x-transition:leave-end="opacity-0">
+     x-transition:leave-end="opacity-0"
+     @click.self="$wire.closeModal()">
     
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4"
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-auto my-6 flex flex-col relative"
+         style="max-height: calc(100vh - 3rem);"
          x-transition:enter="transition ease-out duration-300 transform"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
          x-transition:leave="transition ease-in duration-200 transform"
          x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95">
+         x-transition:leave-end="opacity-0 scale-95"
+         @click.stop>
         
         <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <h2 class="text-2xl font-bold text-gray-900">
                 {{ $isEditMode ? 'Editar Categoria' : 'Nova Categoria' }}
             </h2>
             <button wire:click="closeModal" 
+                    type="button"
                     class="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -30,7 +34,8 @@
         </div>
 
         <!-- Modal Body -->
-        <form wire:submit="save" class="p-6 space-y-6">
+        <form wire:submit="save" class="flex-1 overflow-y-auto">
+            <div class="p-6 space-y-6">
             
             <!-- Current Image Display (only for edit mode) -->
             @if($isEditMode && $currentImage && !$removeImage)
@@ -71,17 +76,33 @@
 
                 <!-- Parent Category -->
                 <div>
-                    <label for="parentId" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Categoria Pai
+                    <label for="parentId" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                        </svg>
+                        Categoria Pai <span class="text-xs text-gray-400 font-normal ml-1">(Opcional)</span>
                     </label>
-                    <select wire:model="parentId"
-                            id="parentId"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 @error('parentId') border-red-500 @enderror">
-                        <option value="">Categoria Principal</option>
-                        @foreach($parentCategories as $parent)
-                            <option value="{{ $parent->id }}">{{ $parent->name }}</option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <select wire:model="parentId"
+                                id="parentId"
+                                class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 appearance-none @error('parentId') border-red-500 @enderror">
+                            <option value="">✨ Categoria Principal (Sem Pai)</option>
+                            @foreach($parentCategories as $parent)
+                                <option value="{{ $parent->id }}">📁 {{ $parent->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 flex items-center">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Deixe vazio para criar uma categoria principal. Selecione um pai para criar subcategoria.
+                    </p>
                     @error('parentId')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -223,10 +244,11 @@
                     </div>
                 </div>
             @endif
+            </div>
         </form>
 
         <!-- Modal Footer -->
-        <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+        <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 flex-shrink-0 bg-white">
             <button wire:click="closeModal"
                     type="button"
                     class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-200">

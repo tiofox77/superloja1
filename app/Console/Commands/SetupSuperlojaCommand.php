@@ -37,10 +37,10 @@ class SetupSuperlojaCommand extends Command
         // Create admin user if not exists
         $this->info('🔑 Creating admin user...');
         $admin = User::firstOrCreate(
-            ['email' => 'admin@superloja.ao'],
+            ['email' => 'admin@superloja.vip'],
             [
                 'name' => 'Super Admin',
-                'email' => 'admin@superloja.ao',
+                'email' => 'admin@superloja.vip',
                 'password' => bcrypt('admin123'),
                 'role' => 'admin',
                 'is_active' => true,
@@ -49,7 +49,7 @@ class SetupSuperlojaCommand extends Command
         );
         
         if ($admin->wasRecentlyCreated) {
-            $this->info('✅ Admin user created: admin@superloja.ao / admin123');
+            $this->info('✅ Admin user created: admin@superloja.vip / admin123');
         } else {
             $this->info('ℹ️ Admin user already exists');
         }
@@ -85,7 +85,7 @@ class SetupSuperlojaCommand extends Command
         $this->newLine();
         $this->line('📋 <comment>Next Steps:</comment>');
         $this->line('   • Access admin panel: <info>http://superloja.test/admin</info>');
-        $this->line('   • Login: <info>admin@superloja.ao</info> / <info>admin123</info>');
+        $this->line('   • Login: <info>admin@superloja.vip</info> / <info>admin123</info>');
         $this->line('   • Configure social media APIs in Social Media section');
         $this->line('   • Add OpenAI API key to .env for AI features');
         $this->newLine();

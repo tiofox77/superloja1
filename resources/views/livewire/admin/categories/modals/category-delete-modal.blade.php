@@ -1,14 +1,16 @@
 {{-- Modal: DeleteCategory Livewire (DO NOT RENAME) --}}
 <div x-show="$wire.showDeleteModal" x-cloak
-     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="opacity-100"
-     x-transition:leave-end="opacity-0">
+     x-transition:leave-end="opacity-0"
+     @click.self="$wire.closeDeleteModal()">
     
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4"
+         @click.stop
          x-transition:enter="transition ease-out duration-300 transform"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"

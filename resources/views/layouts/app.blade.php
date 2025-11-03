@@ -5,8 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <title>@yield('title', 'SuperLoja') - E-commerce Angola</title>
-    <meta name="description" content="@yield('description', 'SuperLoja - O maior e-commerce de Angola. Produtos de qualidade, entregas rápidas e os melhores preços.')">
+    @php
+        $seoTitle = \App\Models\Setting::get('seo_title', 'SuperLoja Angola - Sua Loja Online de Confiança');
+        $seoDescription = \App\Models\Setting::get('seo_description', 'SuperLoja - O maior e-commerce de Angola. Produtos de qualidade, entregas rápidas e os melhores preços.');
+        $seoKeywords = \App\Models\Setting::get('seo_keywords', 'loja online angola, eletrônicos angola, compras online luanda');
+        $ogImage = \App\Models\Setting::get('og_image', asset('images/og-image.jpg'));
+    @endphp
+    
+    <title>@yield('title', $seoTitle)</title>
+    <meta name="description" content="@yield('description', $seoDescription)">
+    <meta name="keywords" content="{{ $seoKeywords }}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', $seoTitle)">
+    <meta property="og:description" content="@yield('description', $seoDescription)">
+    <meta property="og:image" content="{{ $ogImage }}">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="@yield('title', $seoTitle)">
+    <meta property="twitter:description" content="@yield('description', $seoDescription)">
+    <meta property="twitter:image" content="{{ $ogImage }}">
+    
+    <!-- Favicon -->
+    @php
+        $siteFavicon = \App\Models\Setting::get('site_favicon');
+        if ($siteFavicon && $siteFavicon !== '/favicon.ico') {
+            if (\Illuminate\Support\Str::startsWith($siteFavicon, ['http://', 'https://'])) {
+                $faviconUrl = $siteFavicon;
+            } elseif (\Illuminate\Support\Str::startsWith($siteFavicon, '/storage/')) {
+                $faviconUrl = url($siteFavicon);
+            } elseif (\Illuminate\Support\Str::startsWith($siteFavicon, 'storage/')) {
+                $faviconUrl = url('/' . $siteFavicon);
+            } else {
+                $faviconUrl = asset(ltrim($siteFavicon, '/'));
+            }
+        } else {
+            $faviconUrl = asset('favicon.ico');
+        }
+    @endphp
+    <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ $faviconUrl }}">
+    <link rel="apple-touch-icon" href="{{ $faviconUrl }}">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,6 +89,45 @@
     
     <!-- Livewire Styles -->
     @livewireStyles
+    
+    <!-- Google Analytics -->
+    @php
+        $gaId = \App\Models\Setting::get('google_analytics_id');
+    @endphp
+    @if($gaId)
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $gaId }}');
+        </script>
+    @endif
+    
+    <!-- Facebook Pixel -->
+    @php
+        $fbPixelId = \App\Models\Setting::get('facebook_pixel_id');
+    @endphp
+    @if($fbPixelId)
+        <!-- Facebook Pixel Code -->
+        <script>
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', '{{ $fbPixelId }}');
+            fbq('track', 'PageView');
+        </script>
+        <noscript>
+            <img height="1" width="1" style="display:none" 
+                 src="https://www.facebook.com/tr?id={{ $fbPixelId }}&ev=PageView&noscript=1"/>
+        </noscript>
+    @endif
 </head>
 <body class="bg-gray-50 font-sans antialiased">
     

@@ -66,7 +66,8 @@ class CategoryManager extends Component
 
     public function render()
     {
-        $categories = Category::query()
+        // Buscar categorias hierarquicamente
+        $query = Category::query()
             ->when($this->search, fn($query) => $query->where(function ($q) {
                 $q->where('name', 'like', "%{$this->search}%")
                   ->orWhere('description', 'like', "%{$this->search}%");
@@ -76,9 +77,18 @@ class CategoryManager extends Component
             ->when($this->filter === 'parent', fn($query) => $query->whereNull('parent_id'))
             ->when($this->filter === 'child', fn($query) => $query->whereNotNull('parent_id'))
             ->with(['parent', 'children'])
-            ->withCount(['products', 'children'])
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->paginate(10);
+            ->withCount(['products', 'children']);
+
+        // Ordenação hierárquica: pais primeiro, depois filhos agrupados por pai
+        if ($this->filter !== 'child') {
+            $query->orderByRaw('CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END')
+                  ->orderBy('parent_id', 'asc')
+                  ->orderBy($this->sortBy, $this->sortDirection);
+        } else {
+            $query->orderBy($this->sortBy, $this->sortDirection);
+        }
+
+        $categories = $query->paginate(15);
 
         $parentCategories = Category::whereNull('parent_id')
             ->where('is_active', true)
@@ -100,6 +110,13 @@ class CategoryManager extends Component
             'title' => 'Gerir Categorias',
             'pageTitle' => 'Categorias'
         ]);
+    }
+
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->filter = '';
+        $this->resetPage();
     }
 
     public function openModal($categoryId = null): void
@@ -199,33 +216,136 @@ class CategoryManager extends Component
 
     public function confirmDelete(int $categoryId, string $categoryName): void
     {
-        $category = Category::withCount(['products', 'children'])->findOrFail($categoryId);
-        
-        $this->categoryToDelete = $categoryId;
-        $this->categoryNameToDelete = $categoryName;
-        $this->productCount = $category->products_count;
-        $this->childrenCount = $category->children_count;
-        $this->showDeleteModal = true;
+        try {
+            \Log::info("confirmDelete chamado - ID: {$categoryId}, Nome: {$categoryName}");
+            
+            $category = Category::withCount(['products', 'children'])->findOrFail($categoryId);
+            
+            $this->categoryToDelete = $categoryId;
+            $this->categoryNameToDelete = $categoryName;
+            $this->productCount = $category->products_count;
+            $this->childrenCount = $category->children_count;
+            
+            \Log::info("Modal de exclusão será exibida - Produtos: {$this->productCount}, Subcategorias: {$this->childrenCount}");
+            
+            $this->showDeleteModal = true;
+        } catch (\Exception $e) {
+            \Log::error("Erro ao abrir modal de exclusão: " . $e->getMessage());
+            $this->dispatch('showAlert', [
+                'type' => 'error',
+                'message' => 'Erro ao abrir confirmação de exclusão: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function closeDeleteModal(): void
+    {
+        $this->showDeleteModal = false;
+        $this->categoryToDelete = null;
+        $this->categoryNameToDelete = '';
+        $this->productCount = 0;
+        $this->childrenCount = 0;
     }
 
     public function delete(): void
     {
         try {
-            $category = Category::findOrFail($this->categoryToDelete);
+            if (!$this->categoryToDelete) {
+                throw new \Exception('ID da categoria não encontrado');
+            }
+
+            $category = Category::with(['products', 'children'])->findOrFail($this->categoryToDelete);
+            
+            \Log::info('Tentando excluir categoria: ' . $category->name . ' (ID: ' . $category->id . ')');
+            
+            $productsCount = $category->products()->count();
+            $childrenCount = $category->children()->count();
+            
+            \Log::info("Categoria tem {$productsCount} produtos e {$childrenCount} subcategorias");
+            
+            // Se tiver produtos, remover a categoria deles (não deletar os produtos)
+            if ($productsCount > 0) {
+                \DB::table('products')
+                    ->where('category_id', $category->id)
+                    ->update(['category_id' => null]);
+                \Log::info("Removida categoria de {$productsCount} produtos");
+            }
+            
+            // Se tiver subcategorias, deletar também (incluindo imagens)
+            if ($childrenCount > 0) {
+                foreach ($category->children as $child) {
+                    $childProductsCount = $child->products()->count();
+                    
+                    // Remover categoria dos produtos das subcategorias
+                    if ($childProductsCount > 0) {
+                        \DB::table('products')
+                            ->where('category_id', $child->id)
+                            ->update(['category_id' => null]);
+                        \Log::info("Removida subcategoria de {$childProductsCount} produtos");
+                    }
+                    
+                    // Deletar imagem da subcategoria
+                    if ($child->image) {
+                        try {
+                            Storage::disk('public')->delete($child->image);
+                            \Log::info("Imagem da subcategoria deletada: {$child->image}");
+                        } catch (\Exception $e) {
+                            \Log::warning("Erro ao deletar imagem: {$e->getMessage()}");
+                        }
+                    }
+                }
+                
+                // Deletar subcategorias
+                $category->children()->delete();
+                \Log::info("Subcategorias deletadas");
+            }
             
             // Delete image if exists
             if ($category->image) {
-                Storage::disk('public')->delete($category->image);
+                try {
+                    Storage::disk('public')->delete($category->image);
+                    \Log::info("Imagem da categoria deletada: {$category->image}");
+                } catch (\Exception $e) {
+                    \Log::warning("Erro ao deletar imagem: {$e->getMessage()}");
+                }
             }
             
-            // Delete category (cascade will handle children if configured)
+            // Delete category
+            $categoryName = $category->name;
             $category->delete();
+            \Log::info("Categoria '{$categoryName}' excluída com sucesso");
             
-            $this->showDeleteModal = false;
-            $this->dispatch('notify', message: 'Categoria excluída com sucesso!', type: 'success');
+            $this->closeDeleteModal();
+            
+            session()->flash('success', "Categoria '{$categoryName}' excluída com sucesso!");
+            $this->dispatch('showAlert', [
+                'type' => 'success',
+                'message' => "Categoria '{$categoryName}' excluída com sucesso!"
+            ]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('Categoria não encontrada para exclusão: ' . $this->categoryToDelete);
+            
+            $this->closeDeleteModal();
+            
+            session()->flash('error', 'Categoria não encontrada.');
+            $this->dispatch('showAlert', [
+                'type' => 'error',
+                'message' => 'Categoria não encontrada.'
+            ]);
             
         } catch (\Exception $e) {
-            $this->dispatch('notify', message: 'Erro ao excluir categoria: ' . $e->getMessage(), type: 'error');
+            \Log::error('Erro ao excluir categoria: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            $this->closeDeleteModal();
+            
+            $errorMsg = 'Erro ao excluir categoria: ' . $e->getMessage();
+            session()->flash('error', $errorMsg);
+            $this->dispatch('showAlert', [
+                'type' => 'error',
+                'message' => $errorMsg
+            ]);
         }
     }
 

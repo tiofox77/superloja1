@@ -16,6 +16,13 @@ use Exception;
 class SocialMediaAgentService
 {
     private const FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v18.0';
+    
+    private ImageProcessorService $imageProcessor;
+
+    public function __construct()
+    {
+        $this->imageProcessor = new ImageProcessorService();
+    }
 
     /**
      * Enviar mensagem via Facebook Messenger
@@ -973,9 +980,13 @@ class SocialMediaAgentService
         // Hashtags
         $hashtags = [
             'SuperLojaAngola',
+            'superloja',
             'Angola',
             'Luanda',
             'ComprasOnline',
+            'acessorios',
+            'portateis',
+            'tablets',
         ];
 
         // Hashtags por categoria
@@ -992,14 +1003,32 @@ class SocialMediaAgentService
         // Imagens do produto (URL absoluta para Facebook/Instagram)
         $mediaUrls = [];
         if ($product->featured_image) {
-            // Usar URL absoluta completa para redes sociais
-            $imageUrl = url('storage/' . $product->featured_image);
+            // Processar imagem: adicionar logo, moldura e informações do produto
+            $processedImage = $this->imageProcessor->processProductImage(
+                'storage/' . $product->featured_image,
+                [
+                    'product_name' => $product->name,
+                    'price' => $product->is_on_sale ? $product->sale_price : $product->price,
+                    'add_logo' => true,
+                    'add_border' => true,
+                    'add_watermark' => true,
+                ]
+            );
+
+            // Se processamento falhar, usar imagem original
+            if ($processedImage) {
+                $imageUrl = url('storage/' . $processedImage);
+            } else {
+                $imageUrl = url('storage/' . $product->featured_image);
+            }
+            
             $mediaUrls[] = $imageUrl;
             
             \Log::info('Media URL gerada para post', [
                 'product_id' => $product->id,
                 'image_url' => $imageUrl,
-                'featured_image' => $product->featured_image
+                'featured_image' => $product->featured_image,
+                'processed' => $processedImage ? true : false
             ]);
         }
 
@@ -1068,9 +1097,13 @@ class SocialMediaAgentService
         // Hashtags
         $hashtags = [
             'SuperLojaAngola',
+            'superloja',
             'Angola',
             'Luanda',
             'ComprasOnline',
+            'acessorios',
+            'portateis',
+            'tablets',
             'Promoção',
             'Ofertas',
             'MaisVendidos',
@@ -1080,8 +1113,24 @@ class SocialMediaAgentService
         $mediaUrls = [];
         foreach ($products as $product) {
             if ($product->featured_image) {
-                // Instagram precisa de URL absoluta, não relativa
-                $imageUrl = url(\Storage::url($product->featured_image));
+                // Processar cada imagem do carrossel
+                $processedImage = $this->imageProcessor->processProductImage(
+                    'storage/' . $product->featured_image,
+                    [
+                        'product_name' => $product->name,
+                        'price' => $product->is_on_sale ? $product->sale_price : $product->price,
+                        'add_logo' => true,
+                        'add_border' => true,
+                        'add_watermark' => true,
+                    ]
+                );
+
+                if ($processedImage) {
+                    $imageUrl = url('storage/' . $processedImage);
+                } else {
+                    $imageUrl = url(\Storage::url($product->featured_image));
+                }
+                
                 $mediaUrls[] = $imageUrl;
             }
         }
@@ -1145,6 +1194,21 @@ class SocialMediaAgentService
     private function publishPost(AiAutoPost $post): bool
     {
         try {
+            // Recarregar post do banco para garantir status atualizado (evitar duplicação)
+            $post->refresh();
+            
+            // Se já foi publicado, não publicar novamente
+            if ($post->status !== 'scheduled') {
+                \Log::warning('Post não está mais agendado, pulando', [
+                    'post_id' => $post->id,
+                    'status' => $post->status
+                ]);
+                return false;
+            }
+            
+            // Marcar como 'publishing' imediatamente para evitar duplicação
+            $post->update(['status' => 'publishing']);
+            
             \Log::info('Tentando publicar post', [
                 'post_id' => $post->id,
                 'platform' => $post->platform,
@@ -1277,9 +1341,10 @@ class SocialMediaAgentService
                 'trace' => $e->getTraceAsString()
             ]);
 
+            // Se estava em 'publishing', reverter para 'failed' (não 'scheduled' para evitar loop)
             $post->update([
                 'status' => 'failed',
-                'error_message' => 'Erro: ' . $e->getMessage(),
+                'error_message' => 'Erro ao publicar: ' . $e->getMessage(),
             ]);
             return false;
         }

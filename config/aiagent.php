@@ -35,9 +35,13 @@ return [
         'platforms' => ['facebook', 'instagram'],
         'default_hashtags' => [
             'SuperLojaAngola',
+            'superloja',
             'Angola',
             'Luanda',
             'ComprasOnline',
+            'acessorios',
+            'portateis',
+            'tablets',
         ],
     ],
 
