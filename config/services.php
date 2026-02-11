@@ -41,4 +41,11 @@ return [
         'signature' => env('UNIMTX_SIGNATURE', 'SuperLoja'),
     ],
 
+    'agent_social' => [
+        'url' => env('AGENT_SOCIAL_URL', 'http://host.docker.internal:3001'),
+        'agent_id' => env('AGENT_SOCIAL_AGENT_ID', 'superloja'),
+        'name' => env('AGENT_SOCIAL_NAME', 'Superloja'),
+        'description' => env('AGENT_SOCIAL_DESCRIPTION', 'Sistema de e-commerce da Softec Angola'),
+    ],
+
 ];

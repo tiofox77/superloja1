@@ -94,15 +94,15 @@
     <div class="bg-white border-b border-gray-100">
         <div class="container mx-auto px-4">
             <div class="hidden lg:flex items-center justify-center space-x-8 py-4">
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Início</a>
-                <a href="{{ route('categories') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Categorias</a>
-                <a href="{{ route('products') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Produtos</a>
-                <a href="{{ route('offers') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Ofertas</a>
-                <a href="{{ route('auctions') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Leilões</a>
-                <a href="{{ route('health.wellness') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Saúde</a>
-                <a href="{{ route('brands') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Marcas</a>
-                <a href="{{ route('request.product') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Solicitar</a>
-                <a href="{{ route('contact') }}" class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Contacto</a>
+                <a href="{{ route('home') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Início</a>
+                <a href="{{ route('categories') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Categorias</a>
+                <a href="{{ route('products') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Produtos</a>
+                <a href="{{ route('offers') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Ofertas</a>
+                <a href="{{ route('auctions') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Leilões</a>
+                <a href="{{ route('health.wellness') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Saúde</a>
+                <a href="{{ route('brands') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Marcas</a>
+                <a href="{{ route('product-request') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Solicitar</a>
+                <a href="{{ route('contact') }}" wire:navigate class="text-gray-700 hover:text-orange-500 transition-colors font-medium">Contacto</a>
             </div>
         </div>
     </div>
@@ -126,22 +126,22 @@
                 
                 <!-- Mobile Navigation -->
                 <div class="space-y-2">
-                    <a href="{{ route('home') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Início</a>
-                    <a href="{{ route('categories') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Categorias</a>
-                    <a href="{{ route('products') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Produtos</a>
-                    <a href="{{ route('offers') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Ofertas</a>
-                    <a href="{{ route('auctions') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Leilões</a>
-                    <a href="{{ route('health.wellness') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Saúde</a>
-                    <a href="{{ route('brands') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Marcas</a>
-                    <a href="{{ route('request.product') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Solicitar</a>
-                    <a href="{{ route('contact') }}" class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Contacto</a>
+                    <a href="{{ route('home') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Início</a>
+                    <a href="{{ route('categories') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Categorias</a>
+                    <a href="{{ route('products') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Produtos</a>
+                    <a href="{{ route('offers') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Ofertas</a>
+                    <a href="{{ route('auctions') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Leilões</a>
+                    <a href="{{ route('health.wellness') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Saúde</a>
+                    <a href="{{ route('brands') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Marcas</a>
+                    <a href="{{ route('product-request') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Solicitar</a>
+                    <a href="{{ route('contact') }}" wire:navigate class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 rounded-lg transition-colors">Contacto</a>
                 </div>
                 
                 <!-- Mobile Auth -->
                 @guest
                     <div class="pt-4 border-t border-gray-200 space-y-2">
-                        <a href="{{ route('login') }}" class="block w-full text-center px-4 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Entrar</a>
-                        <a href="{{ route('register') }}" class="block w-full text-center px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600">Registar</a>
+                        <a href="{{ route('login') }}" wire:navigate class="block w-full text-center px-4 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Entrar</a>
+                        <a href="{{ route('register') }}" wire:navigate class="block w-full text-center px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600">Registar</a>
                     </div>
                 @endguest
             </div>

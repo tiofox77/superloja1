@@ -43,15 +43,28 @@ class OrderProofController extends Controller
         $filePath = Storage::disk('public')->path($order->payment_proof);
         $mimeType = Storage::disk('public')->mimeType($order->payment_proof);
 
-        // Verifica se é uma imagem ou PDF para visualização inline
-        if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'])) {
+        // Tipos suportados para visualização inline (streaming)
+        $supportedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+            'application/pdf'
+        ];
+
+        // Retorna arquivo para visualização inline (streaming)
+        if (in_array($mimeType, $supportedTypes)) {
             return response()->file($filePath, [
                 'Content-Type' => $mimeType,
                 'Content-Disposition' => 'inline; filename="comprovativo_' . $order->order_number . '"'
             ]);
         }
 
-        // Para outros tipos, força o download
-        return $this->download($orderId);
+        // Para tipos não suportados, retorna inline mesmo assim (usuário pode baixar via browser)
+        return response()->file($filePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="comprovativo_' . $order->order_number . '"'
+        ]);
     }
 }

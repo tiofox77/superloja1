@@ -7,82 +7,50 @@ use App\Livewire\Admin\Categories\CategoryManager;
 use App\Livewire\Admin\Products\ProductManager;
 use App\Livewire\Admin\Brands\BrandManager;
 use App\Livewire\Admin\Dashboard\AdminDashboard;
+use App\Livewire\Admin\Dashboard\DashboardSpa;
+use App\Livewire\Admin\Products\ProductsSpa;
+use App\Livewire\Admin\Orders\OrdersSpa;
+use App\Livewire\Admin\Settings\SettingsSpa;
+use App\Livewire\Admin\Users\UsersSpa;
+use App\Livewire\Admin\Categories\CategoriesSpa;
+use App\Livewire\Admin\Brands\BrandsSpa;
+use App\Livewire\Admin\Catalog\CatalogSpa;
+use App\Livewire\Admin\Auctions\AuctionsSpa;
+use App\Livewire\Admin\ProductRequests\ProductRequestsSpa;
+use App\Livewire\Admin\Sms\SmsSpa;
+use App\Livewire\Admin\Pos\PosSpa;
 use App\Livewire\Admin\Auctions\AuctionManager;
 use App\Livewire\Admin\ProductRequests\ProductRequestManager;
 use App\Livewire\Admin\Users\UserManager;
 use App\Livewire\Admin\Catalog\CatalogGenerator;
-use App\Livewire\Admin\SocialMedia\SocialMediaManager;
 use App\Livewire\Admin\Orders\OrderManager;
 use App\Livewire\Admin\Pos\PosSystem;
-use App\Livewire\Admin\SocialMedia\SocialMediaConfig;
-use App\Livewire\Admin\SocialMedia\BannerGenerator;
+use App\Livewire\Admin\Products\ImporterSpa;
+use App\Livewire\Admin\System\UpdaterSpa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-// Home page
-Route::get('/', function () {
-    $stats = [
-        'products' => \App\Models\Product::where('is_active', true)->count(),
-        'categories' => \App\Models\Category::where('is_active', true)->count(),
-        'brands' => \App\Models\Brand::where('is_active', true)->count(),
-    ];
-    
-    return view('home', compact('stats'));
-})->name('home');
+// Home page (Livewire SPA)
+Route::get('/', App\Livewire\Pages\HomePage::class)->name('home');
 
 // Test page for modal and notifications
 Route::get('/test-modal', function () {
     return view('test-modal');
 })->name('test-modal');
 
-// Main pages - Redirected to Health & Wellness
-Route::get('/categorias', function () {
-    // Buscar categoria "Saúde e Bem-estar" e suas subcategorias
-    $healthCategory = \App\Models\Category::with(['children' => function($query) {
-        $query->where('is_active', true)->orderBy('name');
-    }])->where('name', 'Saúde e Bem-estar')
-      ->where('is_active', true)
-      ->first();
-    
-    return view('health-wellness', compact('healthCategory'));
-})->name('categories');
+// Main pages
+Route::get('/categorias', App\Livewire\Pages\HealthWellness::class)->name('categories');
 
 Route::get('/produtos', \App\Livewire\Pages\ProductsPage::class)->name('products');
 
-// Rota para produto individual
-Route::get('/produto/{id}', function ($id) {
-    $product = \App\Models\Product::with(['category', 'brand'])->findOrFail($id);
-    return view('product-detail', compact('product'));
-})->name('product.show');
+// Rota para produto individual (Livewire SPA)
+Route::get('/produto/{id}', App\Livewire\Pages\ProductShow::class)->name('product.show');
 
-Route::get('/ofertas', function () {
-    $offers = \App\Models\Product::with(['category', 'brand'])
-        ->where('is_active', true)
-        ->where(function ($query) {
-            $query->whereNotNull('sale_price')
-                  ->where('sale_price', '>', 0);
-        })
-        ->orWhere('is_featured', true)
-        ->paginate(12);
-    
-    return view('offers', compact('offers'));
-})->name('offers');
+// Ofertas (Livewire SPA)
+Route::get('/ofertas', App\Livewire\Pages\OffersPage::class)->name('offers');
 
-Route::get('/marcas', function () {
-    $brands = \App\Models\Brand::with(['products' => function ($query) {
-            $query->where('is_active', true);
-        }])
-        ->withCount(['products as products_count' => function ($query) {
-            $query->where('is_active', true);
-        }])
-        ->get();
-    
-    return view('brands', compact('brands'));
-})->name('brands');
-
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
+// Marcas (Livewire SPA)
+Route::get('/marcas', App\Livewire\Pages\BrandsPage::class)->name('brands');
 
 // Additional pages
 Route::get('/health-wellness', App\Livewire\Pages\HealthWellness::class)->name('health.wellness');
@@ -180,18 +148,12 @@ Route::get('/check-products', function () {
     }
 })->name('check.products');
 
-Route::get('/leiloes', function () {
-    $auctions = \App\Models\Auction::with(['product'])
-        ->where('status', 'active')
-        ->where('end_time', '>', now())
-        ->paginate(12);
-    
-    return view('auctions', compact('auctions'));
-})->name('auctions');
+// Leilões (Livewire SPA)
+Route::get('/leiloes', App\Livewire\Pages\AuctionsPage::class)->name('auctions');
 
-Route::get('/solicitar-produto', function () {
+Route::get('/solicitar-produto-old', function () {
     return view('request-product');
-})->name('request.product');
+})->name('request.product.old');
 
 // Temporary route for isolated Livewire upload testing
 Route::get('/test-upload', function () {
@@ -201,77 +163,75 @@ Route::get('/test-upload', function () {
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Dashboard (Livewire)
-    Route::get('/', AdminDashboard::class)->name('dashboard');
+    // Dashboard SPA (New)
+    Route::get('/', DashboardSpa::class)->name('dashboard');
     
-    // Categories Management (Livewire)
-    Route::get('/categories', CategoryManager::class)->name('categories.index');
+    // Dashboard Legacy
+    Route::get('/dashboard-old', AdminDashboard::class)->name('dashboard.old');
     
-    // Products Management (Livewire)
-    Route::get('/products', ProductManager::class)->name('products.index');
+    // Categories Management (Livewire SPA)
+    Route::get('/categories', CategoriesSpa::class)->name('categories.index');
+    Route::get('/categories-old', CategoryManager::class)->name('categories.old');
     
-    // Products Import
-    Route::get('/products/import', App\Livewire\Admin\Products\ProductImporter::class)->name('products.import');
-    
-    // Products Export Routes
+    // Products Management (Livewire SPA)
+    // IMPORTANTE: Rotas específicas devem vir ANTES das rotas com parâmetros
+    Route::get('/products/import', ImporterSpa::class)->name('products.import');
+    Route::get('/products/import-old', App\Livewire\Admin\Products\ProductImporter::class)->name('products.import.old');
     Route::get('/products/export/pdf', [App\Http\Controllers\Admin\ProductExportController::class, 'exportPdf'])->name('products.export-pdf');
     Route::get('/products/export/csv', [App\Http\Controllers\Admin\ProductExportController::class, 'exportCsv'])->name('products.export-csv');
+    Route::get('/products', ProductsSpa::class)->name('products.index');
+    Route::get('/products-old', ProductManager::class)->name('products.old');
+    // Create/Edit via modal - sem rotas separadas
     
-    // Brands Management (Livewire)
-    Route::get('/brands', BrandManager::class)->name('brands.index');
+    // Brands Management (Livewire SPA)
+    Route::get('/brands', BrandsSpa::class)->name('brands.index');
+    Route::get('/brands-old', BrandManager::class)->name('brands.old');
     
-    // Auctions Management (Livewire)
-    Route::get('/auctions', AuctionManager::class)->name('auctions.index');
+    // Auctions Management (Livewire SPA)
+    Route::get('/auctions', AuctionsSpa::class)->name('auctions.index');
+    Route::get('/auctions-old', AuctionManager::class)->name('auctions.old');
     
-    // Product Requests Management (Livewire)
-    Route::get('/product-requests', ProductRequestManager::class)->name('product-requests.index');
+    // Product Requests Management (Livewire SPA)
+    Route::get('/product-requests', ProductRequestsSpa::class)->name('product-requests.index');
+    Route::get('/product-requests-old', ProductRequestManager::class)->name('product-requests.old');
     
-    // Users Management (Livewire)
-    Route::get('/users', UserManager::class)->name('users.index');
+    // Users Management (Livewire SPA)
+    Route::get('/users', UsersSpa::class)->name('users.index');
+    Route::get('/users-old', UserManager::class)->name('users.old');
     
-    // Catalog Generator (Livewire)
-    Route::get('/catalog', CatalogGenerator::class)->name('catalog.index');
+    // Catalog Generator (Livewire SPA)
+    Route::get('/catalog', CatalogSpa::class)->name('catalog.index');
+    Route::get('/catalog-old', CatalogGenerator::class)->name('catalog.old');
     
-    // Social Media Management (Livewire)
-    Route::get('/social-media', SocialMediaManager::class)->name('social-media.index');
-    Route::get('/social-media/config', SocialMediaConfig::class)->name('social-media.config');
-    Route::get('/social-media/banners', BannerGenerator::class)->name('social-media.banners');
-    
-    // Orders Management (Livewire)
-    Route::get('/orders', OrderManager::class)->name('orders.index');
+    // Orders Management (Livewire SPA)
+    Route::get('/orders', OrdersSpa::class)->name('orders.index');
+    Route::get('/orders/create', PosSystem::class)->name('orders.create'); // Redireciona para PDV
+    Route::get('/orders-old', OrderManager::class)->name('orders.old');
     
     // Order Export Routes
     Route::get('/orders/export/pdf', [App\Http\Controllers\Admin\OrderExportController::class, 'exportPdf'])->name('orders.export-pdf');
     Route::get('/orders/export/csv', [App\Http\Controllers\Admin\OrderExportController::class, 'exportCsv'])->name('orders.export-csv');
     
-    // SMS Management (Livewire)
-    Route::get('/sms', App\Livewire\Admin\Sms\SmsManager::class)->name('sms.index');
+    // SMS Management (Livewire SPA)
+    Route::get('/sms', SmsSpa::class)->name('sms.index');
+    Route::get('/sms-old', App\Livewire\Admin\Sms\SmsManager::class)->name('sms.old');
     
-    // Settings Management (Livewire)
-    Route::get('/settings', App\Livewire\Admin\Settings\SettingsManager::class)->name('settings.index');
+    // Settings Management (Livewire SPA)
+    Route::get('/settings', SettingsSpa::class)->name('settings.index');
+    Route::get('/settings-old', App\Livewire\Admin\Settings\SettingsManager::class)->name('settings.old');
     
-    // System Updater (Livewire)
-    Route::get('/system/update', App\Livewire\Admin\System\SystemUpdater::class)->name('system.update');
+    // System Updater (Livewire SPA)
+    Route::get('/system/update', UpdaterSpa::class)->name('system.update');
+    Route::get('/system/update-old', App\Livewire\Admin\System\SystemUpdater::class)->name('system.update.old');
     
     // Order Payment Proof Routes
     Route::get('/orders/{order}/proof/download', [App\Http\Controllers\Admin\OrderProofController::class, 'download'])->name('orders.download-proof');
     Route::get('/orders/{order}/proof/view', [App\Http\Controllers\Admin\OrderProofController::class, 'view'])->name('orders.view-proof');
     
-    // POS System (Livewire)
-    Route::get('/pos', App\Livewire\Admin\Pos\PosSystem::class)->name('pos.index');
+    // POS System (Livewire SPA)
+    Route::get('/pos', PosSpa::class)->name('pos.index');
+    Route::get('/pos-old', PosSystem::class)->name('pos.old');
     
-    // AI Agent Routes
-    Route::prefix('ai-agent')->name('ai-agent.')->group(function () {
-        Route::get('/', App\Livewire\Admin\AiAgent\AgentDashboard::class)->name('dashboard');
-        Route::get('/insights', App\Livewire\Admin\AiAgent\ProductInsights::class)->name('insights');
-        Route::get('/conversations', App\Livewire\Admin\AiAgent\ConversationManager::class)->name('conversations');
-        Route::get('/posts', App\Livewire\Admin\AiAgent\PostScheduler::class)->name('posts');
-        Route::get('/carousels', App\Livewire\Admin\AiAgent\CarouselManager::class)->name('carousels');
-        Route::get('/knowledge', App\Livewire\Admin\AiAgent\KnowledgeCenter::class)->name('knowledge');
-        Route::get('/diagnostic-logs', App\Livewire\Admin\AiAgent\DiagnosticLogs::class)->name('diagnostic-logs');
-        Route::get('/notifications', App\Livewire\Admin\AiAgent\NotificationChannels::class)->name('notifications');
-        Route::get('/settings', App\Livewire\Admin\AiAgent\AgentSettings::class)->name('settings');
-    });
 });
 
 // User/Customer Dashboard Routes

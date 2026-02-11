@@ -295,35 +295,6 @@ class CatalogGenerator extends Component
         }
     }
 
-    public function generateSocialPost($platform = 'facebook'): void
-    {
-        if (empty($this->selectedProducts)) {
-            $this->dispatch('error', 'Selecione pelo menos um produto para criar o post.');
-            return;
-        }
-
-        $products = Product::with(['category', 'brand'])
-            ->whereIn('id', $this->selectedProducts)
-            ->take(4) // Limit for social media
-            ->get();
-
-        $images = [];
-        foreach ($products as $product) {
-            if ($product->image_url) {
-                $images[] = Storage::url($product->image_url);
-            }
-        }
-
-        // Generate social media post
-        $post = $this->createSocialMediaPost($products, $platform);
-        
-        $this->dispatch('socialPostGenerated', [
-            'platform' => $platform,
-            'content' => $post,
-            'images' => $images,
-        ]);
-    }
-
     private function generateCatalogHtml($products, $forPdf = false): string
     {
         // Garantir que os produtos têm as informações necessárias
@@ -370,36 +341,6 @@ class CatalogGenerator extends Component
         }
 
         return $html;
-    }
-
-    private function createSocialMediaPost($products, $platform): array
-    {
-        $productNames = $products->pluck('name')->take(3)->join(', ');
-        $totalProducts = count($this->selectedProducts);
-        
-        if ($platform === 'facebook') {
-            return [
-                'text' => "🛍️ Novidades na SuperLoja! \n\n" .
-                         "Confira nossos produtos em destaque:\n" .
-                         "• {$productNames}" . ($totalProducts > 3 ? " e mais " . ($totalProducts - 3) . " produtos!" : "") . "\n\n" .
-                         "💰 Preços imperdíveis\n" .
-                         "🚚 Entrega rápida\n" .
-                         "✨ Qualidade garantida\n\n" .
-                         "#SuperLoja #Promoções #Compras #Angola",
-                'hashtags' => ['#SuperLoja', '#Promoções', '#Compras', '#Angola'],
-            ];
-        } else { // Instagram
-            return [
-                'text' => "🛍️ NOVIDADES na SuperLoja! \n\n" .
-                         "{$productNames}" . ($totalProducts > 3 ? " e muito mais!" : "") . "\n\n" .
-                         "💰 Preços que cabem no seu bolso\n" .
-                         "🚚 Entrega em toda Angola\n" .
-                         "✨ Qualidade premium\n\n" .
-                         "Deslize para ver mais ➡️\n\n" .
-                         "#SuperLoja #Shopping #Angola #Luanda",
-                'hashtags' => ['#SuperLoja', '#Shopping', '#Angola', '#Luanda', '#Promoções'],
-            ];
-        }
     }
 
     public function closeModal(): void

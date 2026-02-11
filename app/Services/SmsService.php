@@ -58,21 +58,38 @@ class SmsService
      */
     public function sendSms(string $phoneNumber, string $message)
     {
+        $logData = [
+            'phone' => $phoneNumber,
+            'message' => $message,
+            'provider' => 'unimtx',
+            'type' => 'manual',
+            'user_id' => auth()->id(),
+        ];
+        
         try {
             // Verificar se SMS está habilitado
             $smsEnabled = Setting::get('sms_enabled', true);
             if (!$smsEnabled) {
                 Log::info("SMS desabilitado nas configurações");
+                \App\Models\SmsLog::create(array_merge($logData, [
+                    'status' => 'failed',
+                    'error' => 'SMS desabilitado nas configurações'
+                ]));
                 return false;
             }
             
             if (!$this->accessKey) {
                 Log::warning("Access Key da Unimtx não configurada");
+                \App\Models\SmsLog::create(array_merge($logData, [
+                    'status' => 'failed',
+                    'error' => 'Access Key não configurada'
+                ]));
                 return false;
             }
 
             // Formatar número de telefone (E.164 format)
             $phoneNumber = $this->formatPhoneNumber($phoneNumber);
+            $logData['phone'] = $phoneNumber;
             
             // MÉTODO 1: Usar 'content' - Unimtx junta automaticamente com signature
             // Mais simples e recomendado
@@ -96,13 +113,30 @@ class SmsService
                     'status' => $data['data']['status'] ?? null,
                     'sender' => $this->senderName
                 ]);
+                
+                // Registrar log de sucesso
+                \App\Models\SmsLog::create(array_merge($logData, [
+                    'status' => 'sent',
+                    'message_id' => $data['data']['id'] ?? null,
+                    'response' => json_encode($data),
+                ]));
+                
                 return true;
             } else {
+                $errorData = $response->json();
                 Log::error("Erro ao enviar SMS", [
                     'phone' => $phoneNumber,
                     'status' => $response->status(),
-                    'response' => $response->json()
+                    'response' => $errorData
                 ]);
+                
+                // Registrar log de falha
+                \App\Models\SmsLog::create(array_merge($logData, [
+                    'status' => 'failed',
+                    'error' => $errorData['message'] ?? 'Erro desconhecido',
+                    'response' => json_encode($errorData),
+                ]));
+                
                 return false;
             }
         } catch (Exception $e) {
@@ -110,6 +144,13 @@ class SmsService
                 'phone' => $phoneNumber,
                 'error' => $e->getMessage()
             ]);
+            
+            // Registrar log de exceção
+            \App\Models\SmsLog::create(array_merge($logData, [
+                'status' => 'failed',
+                'error' => $e->getMessage(),
+            ]));
+            
             return false;
         }
     }

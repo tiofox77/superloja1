@@ -2,6 +2,12 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\SubcategoryController;
+use App\Http\Controllers\Api\BrandController;
+use App\Http\Controllers\Api\PosController;
+use App\Http\Controllers\Api\SystemUpdateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -9,32 +15,56 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Webhooks públicos (sem autenticação)
-Route::prefix('webhooks')->name('webhooks.')->group(function () {
-    Route::match(['get', 'post'], '/facebook', [App\Http\Controllers\Admin\AiAgentWebhookController::class, 'facebookWebhook'])->name('facebook');
-    Route::match(['get', 'post'], '/instagram', [App\Http\Controllers\Admin\AiAgentWebhookController::class, 'instagramWebhook'])->name('instagram');
-    
-    // Rota de teste para verificar configuração
-    Route::get('/test', function () {
-        $fbToken = \App\Models\SystemConfig::get('facebook_verify_token');
-        $igToken = \App\Models\SystemConfig::get('instagram_verify_token');
-        
-        return response()->json([
-            'status' => 'ok',
-            'facebook_webhook' => url('api/webhooks/facebook'),
-            'instagram_webhook' => url('api/webhooks/instagram'),
-            'facebook_token_configured' => !empty($fbToken),
-            'instagram_token_configured' => !empty($igToken),
-            'info' => 'Use GET com ?hub.mode=subscribe&hub.verify_token=SEU_TOKEN&hub.challenge=12345 para testar',
-        ]);
-    })->name('test');
+// Protected API routes (require api_token)
+Route::middleware('api_token')->prefix('v1')->group(function () {
+
+    // Products CRUD
+    Route::apiResource('products', ProductController::class);
+
+    // Categories CRUD (root only)
+    Route::apiResource('categories', CategoryController::class);
+
+    // Subcategories CRUD (categories with parent_id)
+    Route::apiResource('subcategories', SubcategoryController::class);
+
+    // Brands CRUD
+    Route::apiResource('brands', BrandController::class);
+
+    // POS
+    Route::prefix('pos')->group(function () {
+        Route::get('products', [PosController::class, 'products']);
+        Route::get('products/barcode/{barcode}', [PosController::class, 'productByBarcode']);
+        Route::get('categories', [PosController::class, 'categories']);
+        Route::post('sale', [PosController::class, 'sale']);
+        Route::get('sales', [PosController::class, 'sales']);
+        Route::get('sales/{id}', [PosController::class, 'saleShow']);
+    });
 });
 
-// Cron Triggers via API (para n8n, Zapier, etc)
-Route::prefix('cron')->name('cron.')->group(function () {
-    Route::match(['get', 'post'], '/trigger-posts', [App\Http\Controllers\Api\CronTriggerController::class, 'triggerPosts'])->name('trigger-posts');
-    Route::match(['get', 'post'], '/trigger-analysis', [App\Http\Controllers\Api\CronTriggerController::class, 'triggerAnalysis'])->name('trigger-analysis');
-    Route::match(['get', 'post'], '/trigger-create-posts', [App\Http\Controllers\Api\CronTriggerController::class, 'triggerCreatePosts'])->name('trigger-create-posts');
-    Route::match(['get', 'post'], '/trigger-create-carousels', [App\Http\Controllers\Api\CronTriggerController::class, 'triggerCreateCarousels'])->name('trigger-create-carousels');
-    Route::get('/status', [App\Http\Controllers\Api\CronTriggerController::class, 'status'])->name('status');
+// System Update Routes (use own X-Update-Token authentication)
+Route::prefix('v1/system')->group(function () {
+    // Status do sistema (público)
+    Route::get('status', [SystemUpdateController::class, 'status']);
+
+    // Updates (requerem X-Update-Token)
+    Route::prefix('updates')->group(function () {
+        Route::get('check', [SystemUpdateController::class, 'checkUpdates']);
+        Route::post('upload', [SystemUpdateController::class, 'uploadUpdate']);
+    });
+
+    // Ficheiros
+    Route::post('files/upload', [SystemUpdateController::class, 'uploadFile']);
+
+    // Comandos
+    Route::post('commands/run', [SystemUpdateController::class, 'runCommand']);
+
+    // Backup
+    Route::prefix('backup')->group(function () {
+        Route::get('list', [SystemUpdateController::class, 'listBackups']);
+        Route::post('create', [SystemUpdateController::class, 'createBackup']);
+        Route::post('restore', [SystemUpdateController::class, 'restoreBackup']);
+    });
+
+    // Otimização
+    Route::post('optimize', [SystemUpdateController::class, 'optimize']);
 });

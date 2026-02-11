@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUPERLOJA ADMIN - CSS VARIABLES
+   Design System com cores e tokens da marca
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* CORES PRIMÁRIAS - LARANJA SUPERLOJA */
+    --sl-primary-50: #FFF7ED;
+    --sl-primary-100: #FFEDD5;
+    --sl-primary-200: #FED7AA;
+    --sl-primary-300: #FDBA74;
+    --sl-primary-400: #FB923C;
+    --sl-primary-500: #FF8C00;
+    --sl-primary-600: #EA580C;
+    --sl-primary-700: #C2410C;
+    --sl-primary-800: #9A3412;
+    --sl-primary-900: #7C2D12;
+    
+    /* CORES SECUNDÁRIAS - VINHO/MAGENTA */
+    --sl-secondary-50: #FDF2F8;
+    --sl-secondary-100: #FCE7F3;
+    --sl-secondary-200: #FBCFE8;
+    --sl-secondary-300: #F9A8D4;
+    --sl-secondary-400: #EC4899;
+    --sl-secondary-500: #8B1E5C;
+    --sl-secondary-600: #7A1850;
+    --sl-secondary-700: #6D1848;
+    --sl-secondary-800: #5A1239;
+    --sl-secondary-900: #470E2D;
+    
+    /* CORES NEUTRAS */
+    --sl-gray-50: #F9FAFB;
+    --sl-gray-100: #F3F4F6;
+    --sl-gray-200: #E5E7EB;
+    --sl-gray-300: #D1D5DB;
+    --sl-gray-400: #9CA3AF;
+    --sl-gray-500: #6B7280;
+    --sl-gray-600: #4B5563;
+    --sl-gray-700: #374151;
+    --sl-gray-800: #1F2937;
+    --sl-gray-900: #111827;
+    
+    /* CORES SEMÂNTICAS */
+    --sl-success: #10B981;
+    --sl-warning: #F59E0B;
+    --sl-danger: #EF4444;
+    --sl-info: #3B82F6;
+    
+    /* LAYOUT */
+    --sl-sidebar-width: 280px;
+    --sl-sidebar-collapsed: 80px;
+    --sl-header-height: 64px;
+    
+    /* SOMBRAS */
+    --sl-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --sl-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --sl-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --sl-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --sl-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    
+    /* TRANSIÇÕES */
+    --sl-transition-fast: 150ms ease;
+    --sl-transition: 200ms ease;
+    --sl-transition-slow: 300ms ease;
+    
+    /* BORDER RADIUS */
+    --sl-radius-sm: 0.375rem;
+    --sl-radius: 0.5rem;
+    --sl-radius-md: 0.625rem;
+    --sl-radius-lg: 0.75rem;
+    --sl-radius-xl: 1rem;
+    --sl-radius-2xl: 1.5rem;
+    --sl-radius-full: 9999px;
+}

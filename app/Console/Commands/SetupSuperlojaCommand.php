@@ -186,17 +186,5 @@ class SetupSuperlojaCommand extends Command
             }
         }
 
-        // Create sample social media account
-        if (!\App\Models\SocialMediaAccount::exists()) {
-            \App\Models\SocialMediaAccount::create([
-                'platform' => 'facebook',
-                'account_name' => 'SuperLoja Angola',
-                'page_id' => 'demo_page_id',
-                'access_token' => 'demo_token_replace_with_real',
-                'is_active' => false, // Disabled until real tokens are provided
-                'auto_post' => false,
-            ]);
-            $this->info('✅ Sample social media account created');
-        }
     }
 }

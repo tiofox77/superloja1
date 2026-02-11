@@ -1,27 +1,34 @@
-<div class="min-h-screen bg-gray-50 flex flex-col">
+<div class="min-h-screen bg-gray-50 flex flex-col" wire:loading.class="opacity-75">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-xl">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
+                        <i data-lucide="shopping-cart" class="w-7 h-7 text-white"></i>
                     </div>
                     <div>
                         <h1 class="text-xl font-bold">POS - Ponto de Venda</h1>
-                        <p class="text-blue-100 text-sm">Sistema de vendas SuperLoja</p>
+                        <p class="text-primary-100 text-sm flex items-center gap-1">
+                            <i data-lucide="zap" class="w-3 h-3"></i>
+                            Sistema rápido de vendas
+                        </p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-6">
                     <div class="text-center">
-                        <div class="text-2xl font-bold">{{ $cartItemCount }}</div>
-                        <div class="text-xs text-blue-100">Itens</div>
+                        <div class="text-3xl font-bold flex items-center justify-center gap-1">
+                            <i data-lucide="package" class="w-5 h-5"></i>
+                            {{ $cartItemCount }}
+                        </div>
+                        <div class="text-xs text-primary-100">Itens</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold">{{ number_format($cartTotal, 2) }} Kz</div>
-                        <div class="text-xs text-blue-100">Total</div>
+                        <div class="text-3xl font-bold flex items-center justify-center gap-1">
+                            <i data-lucide="coins" class="w-5 h-5"></i>
+                            {{ number_format($cartTotal, 0) }}
+                        </div>
+                        <div class="text-xs text-primary-100">Total (Kz)</div>
                     </div>
                 </div>
             </div>
@@ -38,69 +45,103 @@
                     <div class="md:col-span-2">
                         <div class="relative">
                             <input type="text" 
-                                   wire:model.live.debounce.300ms="search"
+                                   wire:model.live.debounce.500ms="search"
                                    placeholder="Buscar produto, SKU ou código de barras..."
-                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                   class="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
+                                <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                            </div>
+                            <div wire:loading wire:target="search" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <i data-lucide="loader-2" class="w-5 h-5 text-primary-500 animate-spin"></i>
                             </div>
                         </div>
                     </div>
                     
-                    <div>
-                        <select wire:model.live="categoryFilter" class="w-full py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">Todas as categorias</option>
-                            @foreach($categories as $category)
+                    <div class="relative">
+                        <select wire:model.live="categoryFilter" class="w-full py-3 pl-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none">
+                            <option value="">📁 Todas categorias</option>
+                            @foreach($this->categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                        </div>
                     </div>
                     
-                    <div>
-                        <select wire:model.live="brandFilter" class="w-full py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">Todas as marcas</option>
-                            @foreach($brands as $brand)
+                    <div class="relative">
+                        <select wire:model.live="brandFilter" class="w-full py-3 pl-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none">
+                            <option value="">🏷️ Todas marcas</option>
+                            @foreach($this->brands as $brand)
                                 <option value="{{ $brand->id }}">{{ $brand->name }}</option>
                             @endforeach
                         </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="mt-4 flex items-center space-x-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" wire:model.live="showOnlyInStock" class="checkbox-modern">
-                        <span class="ml-2 text-sm text-gray-700">Apenas produtos em estoque</span>
-                    </label>
+                <div class="mt-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" wire:model.live="showOnlyInStock" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                            <span class="ml-2 text-sm text-gray-700 group-hover:text-gray-900 flex items-center gap-1">
+                                <i data-lucide="package-check" class="w-4 h-4"></i>
+                                Apenas em estoque
+                            </span>
+                        </label>
+                        <button wire:click="$set('search', ''); $set('categoryFilter', ''); $set('brandFilter', ''); $set('showOnlyInStock', false);"
+                                class="text-xs text-gray-600 hover:text-primary-600 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">
+                            <i data-lucide="x-circle" class="w-3 h-3"></i>
+                            Limpar filtros
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium text-gray-700">
+                            <i data-lucide="box" class="w-4 h-4 inline"></i>
+                            Exibindo: <strong class="text-primary-600">{{ $products->count() }}</strong> de <strong>{{ $products->total() }}</strong>
+                        </span>
+                        <div wire:loading wire:target="categoryFilter,brandFilter,showOnlyInStock,search" class="text-sm text-primary-600 flex items-center gap-1">
+                            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                            Carregando...
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Products Grid -->
             <div class="flex-1 overflow-y-auto p-4">
+                <div class="mb-3 text-xs text-gray-500 flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                    Total de produtos ativos: <strong>{{ $products->total() }}</strong> | Mostrando nesta página: <strong>{{ $products->count() }}</strong>
+                </div>
                 @if($products->count() > 0)
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         @foreach($products as $product)
-                            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-                                 wire:click="addToCart({{ $product->id }})">
+                            <div class="bg-white rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer group border border-gray-100"
+                                 wire:click="addToCart({{ $product->id }})"
+                                 wire:loading.class="opacity-50 pointer-events-none"
+                                 wire:target="addToCart">
                                 <div class="p-4">
                                     @if($product->featured_image_url)
                                         <img src="{{ $product->featured_image_url }}" 
                                              alt="{{ $product->name }}" 
                                              class="w-full h-32 object-cover rounded-lg mb-3">
                                     @else
-                                        <div class="w-full h-32 bg-gray-200 rounded-lg mb-3 flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                            </svg>
+                                        <div class="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl mb-3 flex items-center justify-center">
+                                            <i data-lucide="package" class="w-12 h-12 text-gray-400"></i>
                                         </div>
                                     @endif
                                     
-                                    <h3 class="font-semibold text-sm text-gray-900 mb-1" title="{{ $product->name }}">
+                                    <h3 class="font-semibold text-sm text-gray-900 mb-1 group-hover:text-primary-600 transition-colors" title="{{ $product->name }}">
                                         {{ Str::limit($product->name, 30) }}
                                     </h3>
                                     
-                                    <p class="text-xs text-gray-500 mb-2">{{ $product->category->name }}</p>
+                                    <p class="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                                        <i data-lucide="tag" class="w-3 h-3"></i>
+                                        {{ $product->category->name }}
+                                    </p>
                                     
                                     <div class="flex justify-between items-center">
                                         <div>
@@ -115,8 +156,9 @@
                                         
                                         @if($product->manage_stock)
                                             <div class="text-right">
-                                                <div class="text-xs {{ $product->stock_quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
-                                                    {{ $product->stock_quantity > 0 ? $product->stock_quantity . ' em estoque' : 'Sem estoque' }}
+                                                <div class="text-xs font-medium {{ $product->stock_quantity > 0 ? 'text-green-600' : 'text-red-600' }} flex items-center gap-1 justify-end">
+                                                    <i data-lucide="{{ $product->stock_quantity > 0 ? 'check-circle' : 'x-circle' }}" class="w-3 h-3"></i>
+                                                    {{ $product->stock_quantity > 0 ? $product->stock_quantity : 'Esgotado' }}
                                                 </div>
                                             </div>
                                         @endif
@@ -131,11 +173,11 @@
                         {{ $products->links() }}
                     </div>
                 @else
-                    <div class="text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                        </svg>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum produto encontrado</h3>
+                    <div class="text-center py-16">
+                        <div class="mb-4">
+                            <i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-300"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Nenhum produto encontrado</h3>
                         <p class="text-gray-500">Ajuste os filtros ou verifique se existem produtos em estoque.</p>
                     </div>
                 @endif
@@ -147,20 +189,19 @@
             <!-- Cart Header -->
             <div class="p-4 border-b bg-gray-50">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-gray-900">Carrinho</h2>
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i data-lucide="shopping-bag" class="w-5 h-5 text-primary-600"></i>
+                        Carrinho
+                    </h2>
                     <div class="flex space-x-2">
                         <button wire:click="toggleCartDetails" 
-                                class="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-200">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                                class="p-2 text-gray-600 hover:text-gray-900 rounded-xl hover:bg-gray-200 transition-colors">
+                            <i data-lucide="chevron-{{ $showCartDetails ? 'up' : 'down' }}" class="w-5 h-5"></i>
                         </button>
                         @if(!empty($cart))
                             <button wire:click="clearCart" 
-                                    class="p-2 text-red-600 hover:text-red-800 rounded-lg hover:bg-red-100">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
+                                    class="p-2 text-red-600 hover:text-red-700 rounded-xl hover:bg-red-50 transition-colors">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
                         @endif
                     </div>
@@ -172,39 +213,40 @@
                 @if(!empty($cart))
                     <div class="divide-y divide-gray-200">
                         @foreach($cart as $itemId => $item)
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-medium text-sm text-gray-900">{{ $item['name'] }}</h4>
+                            <div class="p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h4 class="font-medium text-sm text-gray-900 flex-1">{{ $item['name'] }}</h4>
                                     <button wire:click="removeFromCart('{{ $itemId }}')" 
-                                            class="text-red-600 hover:text-red-800">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
+                                            class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-all">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
                                     </button>
                                 </div>
                                 
                                 <div class="flex justify-between items-center">
-                                    <div class="flex items-center space-x-2">
-                                        <button wire:click="updateQuantity('{{ $itemId }}', {{ $item['quantity'] - 1 }})"
-                                                class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                            </svg>
+                                    <div class="flex items-center space-x-1">
+                                        <button wire:click="updateQuantity('{{ $itemId }}', {{ max(1, $item['quantity'] - 1) }})"
+                                                class="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center hover:from-primary-100 hover:to-primary-200 hover:text-primary-700 transition-all active:scale-95">
+                                            <i data-lucide="minus" class="w-4 h-4"></i>
                                         </button>
                                         
-                                        <span class="w-8 text-center font-medium">{{ $item['quantity'] }}</span>
+                                        <input type="number" 
+                                               wire:model.blur="cart.{{ $itemId }}.quantity"
+                                               wire:change="updateQuantity('{{ $itemId }}', $event.target.value)"
+                                               class="w-14 h-9 text-center font-bold border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200"
+                                               min="1">
                                         
                                         <button wire:click="updateQuantity('{{ $itemId }}', {{ $item['quantity'] + 1 }})"
-                                                class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
+                                                class="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center hover:from-primary-100 hover:to-primary-200 hover:text-primary-700 transition-all active:scale-95">
+                                            <i data-lucide="plus" class="w-4 h-4"></i>
                                         </button>
                                     </div>
                                     
                                     <div class="text-right">
-                                        <div class="font-semibold">{{ number_format($item['total'], 2) }} Kz</div>
-                                        <div class="text-xs text-gray-500">{{ number_format($item['price'], 2) }} Kz cada</div>
+                                        <div class="font-bold text-gray-900">{{ number_format($item['total'], 0) }} Kz</div>
+                                        <div class="text-xs text-gray-500 flex items-center gap-1 justify-end">
+                                            <i data-lucide="tag" class="w-3 h-3"></i>
+                                            {{ number_format($item['price'], 0) }} Kz
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -213,10 +255,10 @@
                 @else
                     <div class="flex-1 flex items-center justify-center p-8">
                         <div class="text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 01-2 2H9a2 2 0 01-2-2v-4m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
-                            </svg>
-                            <p class="text-gray-500">Carrinho vazio</p>
+                            <div class="mb-4">
+                                <i data-lucide="shopping-cart" class="mx-auto w-16 h-16 text-gray-300"></i>
+                            </div>
+                            <p class="text-gray-600 font-medium mb-1">Carrinho vazio</p>
                             <p class="text-sm text-gray-400">Clique nos produtos para adicionar</p>
                         </div>
                     </div>
@@ -228,13 +270,19 @@
                 <div class="border-t bg-gray-50 p-4 space-y-3">
                     <!-- Discount -->
                     <div class="flex items-center space-x-2">
-                        <input type="number" 
-                               wire:model.live="discountPercentage"
-                               placeholder="Desconto %"
-                               min="0" max="100"
-                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <div class="relative flex-1">
+                            <input type="number" 
+                                   wire:model.blur="discountPercentage"
+                                   placeholder="Desconto %"
+                                   min="0" max="100"
+                                   class="w-full px-3 py-2 pl-9 border-2 border-gray-200 rounded-xl text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-200">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="percent" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                        </div>
                         <button wire:click="applyDiscount" 
-                                class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm">
+                                class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 text-sm font-medium transition-all active:scale-95 flex items-center gap-1">
+                            <i data-lucide="badge-percent" class="w-4 h-4"></i>
                             Aplicar
                         </button>
                     </div>
@@ -268,7 +316,8 @@
 
                     <!-- Checkout Button -->
                     <button wire:click="openPaymentModal" 
-                            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-200">
+                            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 rounded-xl font-bold hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
                         Processar Venda
                     </button>
                 </div>

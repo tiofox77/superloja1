@@ -10,8 +10,14 @@ use App\Models\OrderItem;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
+#[Layout('components.admin.layouts.app')]
+#[Title('POS - Ponto de Venda')]
 class PosSystem extends Component
 {
     use WithPagination;
@@ -28,7 +34,7 @@ class PosSystem extends Component
     public $search = '';
     public $categoryFilter = '';
     public $brandFilter = '';
-    public $showOnlyInStock = true;
+    public $showOnlyInStock = false;
 
     // Customer info
     public $customerName = '';
@@ -58,10 +64,33 @@ class PosSystem extends Component
         $this->resetCart();
     }
 
+    #[Computed]
+    public function categories()
+    {
+        return Cache::remember('pos_categories', 3600, function () {
+            return Category::where('is_active', true)
+                ->orderBy('name')
+                ->select('id', 'name')
+                ->get();
+        });
+    }
+
+    #[Computed]
+    public function brands()
+    {
+        return Cache::remember('pos_brands', 3600, function () {
+            return Brand::where('is_active', true)
+                ->orderBy('name')
+                ->select('id', 'name')
+                ->get();
+        });
+    }
+
     public function render()
     {
         $products = Product::query()
-            ->with(['category', 'brand'])
+            ->select('id', 'name', 'sku', 'barcode', 'price', 'sale_price', 'stock_quantity', 'manage_stock', 'is_active', 'featured_image', 'category_id', 'brand_id')
+            ->with(['category:id,name', 'brand:id,name'])
             ->where('is_active', true)
             ->when($this->search, function($query) {
                 $query->where(function($q) {
@@ -70,28 +99,14 @@ class PosSystem extends Component
                       ->orWhere('barcode', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when($this->categoryFilter, function($query) {
-                $query->where('category_id', $this->categoryFilter);
-            })
-            ->when($this->brandFilter, function($query) {
-                $query->where('brand_id', $this->brandFilter);
-            })
-            ->when($this->showOnlyInStock, function($query) {
-                $query->where('stock_quantity', '>', 0);
-            })
+            ->when($this->categoryFilter, fn($query) => $query->where('category_id', $this->categoryFilter))
+            ->when($this->brandFilter, fn($query) => $query->where('brand_id', $this->brandFilter))
+            ->when($this->showOnlyInStock, fn($query) => $query->where('stock_quantity', '>', 0))
             ->orderBy('name')
-            ->paginate(20);
-
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
-        $brands = Brand::where('is_active', true)->orderBy('name')->get();
+            ->paginate(200);
 
         return view('livewire.admin.pos.pos-system', [
             'products' => $products,
-            'categories' => $categories,
-            'brands' => $brands,
-        ])->layout('components.layouts.admin', [
-            'title' => 'POS - Ponto de Venda',
-            'pageTitle' => 'POS'
         ]);
     }
 
@@ -169,9 +184,14 @@ class PosSystem extends Component
             return;
         }
 
-        $product = Product::find($this->cart[$cartItemId]['product_id']);
+        if (!isset($this->cart[$cartItemId])) {
+            return;
+        }
+
+        $product = Product::select('id', 'manage_stock', 'stock_quantity')
+            ->find($this->cart[$cartItemId]['product_id']);
         
-        if ($product->manage_stock && $product->stock_quantity < $quantity) {
+        if ($product && $product->manage_stock && $product->stock_quantity < $quantity) {
             $this->dispatch('showAlert', [
                 'type' => 'error',
                 'message' => 'Estoque insuficiente. Disponível: ' . $product->stock_quantity
@@ -179,7 +199,7 @@ class PosSystem extends Component
             return;
         }
 
-        $this->cart[$cartItemId]['quantity'] = $quantity;
+        $this->cart[$cartItemId]['quantity'] = (int)$quantity;
         $this->cart[$cartItemId]['total'] = $this->cart[$cartItemId]['price'] * $quantity;
         
         $this->calculateTotals();

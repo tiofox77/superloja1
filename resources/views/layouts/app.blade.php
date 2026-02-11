@@ -6,29 +6,36 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @php
-        $seoTitle = \App\Models\Setting::get('seo_title', 'SuperLoja Angola - Sua Loja Online de Confiança');
-        $seoDescription = \App\Models\Setting::get('seo_description', 'SuperLoja - O maior e-commerce de Angola. Produtos de qualidade, entregas rápidas e os melhores preços.');
-        $seoKeywords = \App\Models\Setting::get('seo_keywords', 'loja online angola, eletrônicos angola, compras online luanda');
-        $ogImage = \App\Models\Setting::get('og_image', asset('images/og-image.jpg'));
+        $appName = \App\Models\Setting::get('app_name', 'SuperLoja');
+        $seoTitle = \App\Models\Setting::get('meta_title') ?: ($appName . ' - Sua Loja Online de Confiança');
+        $seoDescription = \App\Models\Setting::get('meta_description') ?: 'SuperLoja - O maior e-commerce de Angola. Produtos de qualidade, entregas rápidas e os melhores preços.';
+        $seoKeywords = \App\Models\Setting::get('meta_keywords') ?: 'loja online angola, eletrônicos angola, compras online luanda';
+        $ogImagePath = \App\Models\Setting::get('og_image');
+        $ogImage = $ogImagePath ? asset('storage/' . $ogImagePath) : asset('images/og-image.jpg');
+        $siteLogo = \App\Models\Setting::get('site_logo');
     @endphp
     
     <title>@yield('title', $seoTitle)</title>
     <meta name="description" content="@yield('description', $seoDescription)">
-    <meta name="keywords" content="{{ $seoKeywords }}">
+    <meta name="keywords" content="@yield('keywords', $seoKeywords)">
+    <meta name="author" content="{{ $appName }}">
+    <link rel="canonical" href="{{ url()->current() }}">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $appName }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('title', $seoTitle)">
     <meta property="og:description" content="@yield('description', $seoDescription)">
     <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:locale" content="pt_AO">
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ url()->current() }}">
-    <meta property="twitter:title" content="@yield('title', $seoTitle)">
-    <meta property="twitter:description" content="@yield('description', $seoDescription)">
-    <meta property="twitter:image" content="{{ $ogImage }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ url()->current() }}">
+    <meta name="twitter:title" content="@yield('title', $seoTitle)">
+    <meta name="twitter:description" content="@yield('description', $seoDescription)">
+    <meta name="twitter:image" content="{{ $ogImage }}">
     
     <!-- Favicon -->
     @php
@@ -92,7 +99,7 @@
     
     <!-- Google Analytics -->
     @php
-        $gaId = \App\Models\Setting::get('google_analytics_id');
+        $gaId = \App\Models\Setting::get('google_analytics');
     @endphp
     @if($gaId)
         <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -107,7 +114,7 @@
     
     <!-- Facebook Pixel -->
     @php
-        $fbPixelId = \App\Models\Setting::get('facebook_pixel_id');
+        $fbPixelId = \App\Models\Setting::get('facebook_pixel');
     @endphp
     @if($fbPixelId)
         <!-- Facebook Pixel Code -->
@@ -349,6 +356,33 @@
             Livewire.on('productDeleted', () => {
                 toastr.success('Produto excluído com sucesso!');
             });
+        });
+
+        // SPA Navigation - Reinitialize scripts after page transitions
+        document.addEventListener('livewire:navigated', () => {
+            console.log('Livewire navigated - reinitializing scripts');
+            
+            // Reinitialize toastr settings
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+            
+            // Scroll to top on navigation
+            window.scrollTo(0, 0);
         });
     </script>
     

@@ -18,10 +18,10 @@
         <!-- Menu de Navegação -->
         <div class="flex flex-wrap gap-4 mb-8">
             <button class="bg-purple-600 text-white px-6 py-3 rounded-lg font-bold">📊 Dashboard</button>
-            <a href="{{ route('user.orders') }}" class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">📦 Meus Pedidos</a>
-            <a href="{{ route('user.profile') }}" class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">👤 Perfil</a>
-            <a href="{{ route('auctions') }}" class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">🎯 Leilões</a>
-            <a href="{{ route('user.wishlist') }}" class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">❤️ Favoritos</a>
+            <a href="{{ route('user.orders') }}" wire:navigate class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">📦 Meus Pedidos</a>
+            <a href="{{ route('user.profile') }}" wire:navigate class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">👤 Perfil</a>
+            <a href="{{ route('auctions') }}" wire:navigate class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">🎯 Leilões</a>
+            <a href="{{ route('user.wishlist') }}" wire:navigate class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">❤️ Favoritos</a>
         </div>
 
         <!-- Estatísticas -->
@@ -82,7 +82,7 @@
                     <h2 class="text-xl font-bold text-gray-900 flex items-center">
                         <span class="mr-2">📦</span> Pedidos Recentes
                     </h2>
-                    <a href="{{ route('user.orders') }}" class="text-purple-600 hover:text-purple-700 font-medium">Ver todos</a>
+                    <a href="{{ route('user.orders') }}" wire:navigate class="text-purple-600 hover:text-purple-700 font-medium">Ver todos</a>
                 </div>
 
                 <div class="space-y-4">
@@ -111,7 +111,7 @@
                         <div class="text-center py-8 text-gray-500">
                             <span class="text-4xl mb-2 block">🛒</span>
                             <p>Ainda não fez nenhum pedido</p>
-                            <a href="{{ route('products') }}" class="text-purple-600 hover:text-purple-700 font-medium mt-2 inline-block">Explorar produtos</a>
+                            <a href="{{ route('products') }}" wire:navigate class="text-purple-600 hover:text-purple-700 font-medium mt-2 inline-block">Explorar produtos</a>
                         </div>
                     @endforelse
                 </div>
@@ -123,7 +123,7 @@
                     <h2 class="text-xl font-bold text-gray-900 flex items-center">
                         <span class="mr-2">🎯</span> Leilões Ativos
                     </h2>
-                    <a href="{{ route('auctions') }}" class="text-purple-600 hover:text-purple-700 font-medium">Ver todos</a>
+                    <a href="{{ route('auctions') }}" wire:navigate class="text-purple-600 hover:text-purple-700 font-medium">Ver todos</a>
                 </div>
 
                 <div class="space-y-4">
@@ -154,7 +154,7 @@
                         <div class="text-center py-8 text-gray-500">
                             <span class="text-4xl mb-2 block">🎯</span>
                             <p>Nenhum leilão ativo no momento</p>
-                            <a href="{{ route('auctions') }}" class="text-purple-600 hover:text-purple-700 font-medium mt-2 inline-block">Ver leilões</a>
+                            <a href="{{ route('auctions') }}" wire:navigate class="text-purple-600 hover:text-purple-700 font-medium mt-2 inline-block">Ver leilões</a>
                         </div>
                     @endforelse
                 </div>
@@ -168,22 +168,22 @@
             </h2>
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <a href="{{ route('products') }}" class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all text-center">
+                <a href="{{ route('products') }}" wire:navigate class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all text-center">
                     <div class="text-3xl mb-2">🛍️</div>
                     <div class="font-bold">Comprar</div>
                 </a>
                 
-                <a href="{{ route('auctions') }}" class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-all text-center">
+                <a href="{{ route('auctions') }}" wire:navigate class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-all text-center">
                     <div class="text-3xl mb-2">🎯</div>
                     <div class="font-bold">Leilões</div>
                 </a>
                 
-                <a href="{{ route('user.orders') }}" class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all text-center">
+                <a href="{{ route('user.orders') }}" wire:navigate class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all text-center">
                     <div class="text-3xl mb-2">📦</div>
                     <div class="font-bold">Pedidos</div>
                 </a>
                 
-                <a href="{{ route('request.product') }}" class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all text-center">
+                <a href="{{ route('product-request') }}" wire:navigate class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all text-center">
                     <div class="text-3xl mb-2">🔍</div>
                     <div class="font-bold">Solicitar</div>
                 </a>
