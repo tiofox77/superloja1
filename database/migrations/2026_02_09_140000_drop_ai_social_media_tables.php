@@ -11,7 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop AI tables (order matters for foreign keys)
+        // Desativar foreign key checks para evitar erros de constraint
+        Schema::disableForeignKeyConstraints();
+
+        // Drop AI tables
         Schema::dropIfExists('ai_messages');
         Schema::dropIfExists('ai_agent_actions');
         Schema::dropIfExists('ai_sentiment_analysis');
@@ -33,6 +36,9 @@ return new class extends Migration
         // Drop notification/config tables
         Schema::dropIfExists('admin_notification_channels');
         Schema::dropIfExists('system_configs');
+
+        // Reativar foreign key checks
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

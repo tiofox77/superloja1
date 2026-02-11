@@ -206,7 +206,7 @@ POST /api/v1/products
 }
 ```
 
-**Exemplo completo (recomendado):**
+**Exemplo completo (recomendado para agentes IA):**
 
 ```json
 {
@@ -226,8 +226,11 @@ POST /api/v1/products
   "is_active": true,
   "is_featured": true,
   "condition": "new",
-  "images": ["products/galaxy-a54-1.jpg", "products/galaxy-a54-2.jpg"],
-  "featured_image": "products/galaxy-a54-1.jpg",
+  "featured_image_url": "https://example.com/images/galaxy-a54-front.jpg",
+  "image_urls": [
+    "https://example.com/images/galaxy-a54-back.jpg",
+    "https://example.com/images/galaxy-a54-side.jpg"
+  ],
   "specifications": {
     "Memória": "128GB",
     "RAM": "6GB",
@@ -841,14 +844,40 @@ O agente deve perguntar ao utilizador os seguintes dados, **um de cada vez ou ag
 | `attributes` | object | Atributos livres `{"cor": "preto"}` |
 | `specifications` | object | Especificações `{"RAM": "6GB"}` |
 
-#### Imagens (upload via multipart/form-data)
+#### Imagens via URL (recomendado para agentes IA)
+
+> **O servidor faz download automático das imagens.** Basta enviar as URLs no JSON.
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `featured_image_url` | string (URL) | URL da imagem principal (o servidor faz download, max 5MB) |
+| `image_urls` | array de strings (URLs) | URLs de imagens para a galeria |
+
+**Exemplo com URLs:**
+```json
+{
+  "name": "Fone JBL Tune 510BT",
+  "price": 8500,
+  "featured_image_url": "https://example.com/images/jbl-tune-510bt.jpg",
+  "image_urls": [
+    "https://example.com/images/jbl-tune-510bt-2.jpg",
+    "https://example.com/images/jbl-tune-510bt-3.jpg"
+  ]
+}
+```
+
+> Se o agente enviar `image_urls` mas não `featured_image_url`, a primeira imagem da galeria será usada como destaque.
+> Formatos aceites: jpeg, png, gif, webp. Max 5MB por imagem.
+> Se o download de uma URL falhar, é silenciosamente ignorado (o produto é criado sem essa imagem).
+
+#### Imagens via upload (alternativa — multipart/form-data)
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | `featured_image` | file | Imagem principal (max 5MB, jpeg/png/jpg/gif/webp) |
 | `images[]` | files | Galeria de imagens (múltiplos ficheiros) |
 
-> **Nota:** Se o agente não enviar `featured_image` mas enviar `images[]`, a primeira imagem será usada como destaque automaticamente.
+> Upload de ficheiros requer `Content-Type: multipart/form-data` em vez de `application/json`.
 
 ---
 
@@ -866,7 +895,9 @@ curl -X POST "https://superloja.vip/api/v1/products" \
      }'
 ```
 
-#### Exemplo completo (campos recomendados)
+#### Exemplo completo com imagens via URL (recomendado para agentes IA)
+
+> **O agente só precisa de enviar URLs de imagens no JSON.** O servidor faz download automático.
 
 ```bash
 curl -X POST "https://superloja.vip/api/v1/products" \
@@ -874,21 +905,21 @@ curl -X POST "https://superloja.vip/api/v1/products" \
      -H "Content-Type: application/json" \
      -d '{
        "name": "Samsung Galaxy A54 128GB",
-       "description": "Smartphone Samsung Galaxy A54 com 128GB de armazenamento, 6GB RAM, tela Super AMOLED 6.4 polegadas, câmara tripla 50MP.",
+       "description": "Smartphone Samsung Galaxy A54 com 128GB, 6GB RAM, tela Super AMOLED 6.4 polegadas, câmara tripla 50MP.",
        "short_description": "Galaxy A54 128GB Preto",
        "price": 45000.00,
        "sale_price": 39900.00,
-       "cost_price": 30000.00,
-       "sku": "SAM-A54-128-BLK",
-       "barcode": "7891234567890",
        "category_id": 10,
        "brand_id": 1,
        "stock_quantity": 25,
-       "manage_stock": true,
-       "low_stock_threshold": 5,
        "is_active": true,
        "is_featured": true,
        "condition": "new",
+       "featured_image_url": "https://example.com/images/galaxy-a54-front.jpg",
+       "image_urls": [
+         "https://example.com/images/galaxy-a54-back.jpg",
+         "https://example.com/images/galaxy-a54-side.jpg"
+       ],
        "specifications": {
          "Memória": "128GB",
          "RAM": "6GB",
@@ -898,19 +929,36 @@ curl -X POST "https://superloja.vip/api/v1/products" \
      }'
 ```
 
-#### Exemplo com imagens (multipart/form-data)
+> **Regras das imagens por URL:**
+> - Formatos aceites: jpeg, png, gif, webp
+> - Max 5MB por imagem
+> - Se `featured_image_url` não for enviado mas `image_urls` sim, a primeira imagem da galeria é usada como destaque
+> - Se o download de uma URL falhar, é ignorado silenciosamente (produto criado sem essa imagem)
+> - O servidor guarda as imagens localmente — as URLs originais não são mantidas
+
+#### Exemplo sem imagens (só JSON)
+
+```bash
+curl -X POST "https://superloja.vip/api/v1/products" \
+     -H "Authorization: Bearer Popadic17" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "name": "Fone Bluetooth TWS",
+       "price": 3500.00,
+       "stock_quantity": 100
+     }'
+```
+
+#### Exemplo com upload de ficheiros (alternativa — multipart/form-data)
 
 ```bash
 curl -X POST "https://superloja.vip/api/v1/products" \
      -H "Authorization: Bearer Popadic17" \
      -F "name=Samsung Galaxy A54 128GB" \
      -F "price=45000.00" \
-     -F "sale_price=39900.00" \
      -F "category_id=10" \
-     -F "brand_id=1" \
      -F "stock_quantity=25" \
      -F "description=Smartphone Samsung Galaxy A54 128GB" \
-     -F "is_active=true" \
      -F "featured_image=@/caminho/foto-principal.jpg" \
      -F "images[]=@/caminho/foto2.jpg" \
      -F "images[]=@/caminho/foto3.jpg"

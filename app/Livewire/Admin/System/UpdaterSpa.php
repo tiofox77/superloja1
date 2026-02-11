@@ -401,8 +401,13 @@ class UpdaterSpa extends Component
         $this->addLog('info', 'Isso pode levar alguns minutos...');
 
         try {
+            $home = base_path();
             $result = Process::path(base_path())
                 ->timeout(300)
+                ->env([
+                    'HOME' => $home,
+                    'COMPOSER_HOME' => $home . '/.composer',
+                ])
                 ->run('composer install --no-interaction --optimize-autoloader --no-dev 2>&1');
 
             if ($result->successful()) {

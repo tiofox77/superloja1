@@ -158,6 +158,9 @@ class ProductController extends Controller
             'meta_keywords' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'featured_image_url' => 'nullable|url',
+            'image_urls' => 'nullable|array',
+            'image_urls.*' => 'nullable|url',
             'attributes' => 'nullable|array',
             'specifications' => 'nullable|array',
         ]);
@@ -178,17 +181,40 @@ class ProductController extends Controller
             $validated['category_id'] = \App\Models\Category::first()?->id ?? 1;
         }
 
-        // Processar imagem de destaque (upload)
+        // Processar imagem de destaque (upload de ficheiro)
         if ($request->hasFile('featured_image')) {
             $validated['featured_image'] = $this->uploadImage($request->file('featured_image'));
         }
 
-        // Processar múltiplas imagens (upload)
+        // Processar imagem de destaque (URL — download automático)
+        if (empty($validated['featured_image']) && !empty($validated['featured_image_url'])) {
+            $downloaded = $this->downloadImageFromUrl($validated['featured_image_url'], $validated['name'] ?? 'product');
+            if ($downloaded) {
+                $validated['featured_image'] = $downloaded;
+            }
+        }
+        unset($validated['featured_image_url']);
+
+        // Processar múltiplas imagens (upload de ficheiros)
         $images = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $images[] = $this->uploadImage($image);
             }
+        }
+
+        // Processar múltiplas imagens (URLs — download automático)
+        if (!empty($validated['image_urls'])) {
+            foreach ($validated['image_urls'] as $url) {
+                $downloaded = $this->downloadImageFromUrl($url, $validated['name'] ?? 'product');
+                if ($downloaded) {
+                    $images[] = $downloaded;
+                }
+            }
+        }
+        unset($validated['image_urls']);
+
+        if (!empty($images)) {
             $validated['images'] = $images;
         }
 
@@ -339,6 +365,60 @@ class ProductController extends Controller
         $path = $file->storeAs(self::IMAGES_DIR, $filename, 'public');
         
         return $path;
+    }
+
+    /**
+     * Download de imagem a partir de URL e guardar no storage
+     */
+    protected function downloadImageFromUrl(string $url, string $name = 'product'): ?string
+    {
+        try {
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 15,
+                    'user_agent' => 'SuperLoja/1.0',
+                ],
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ],
+            ]);
+
+            $imageData = @file_get_contents($url, false, $context);
+            if ($imageData === false || strlen($imageData) < 1000) {
+                return null;
+            }
+
+            // Limitar tamanho: max 5MB
+            if (strlen($imageData) > 5 * 1024 * 1024) {
+                return null;
+            }
+
+            // Detectar extensão pelo conteúdo
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->buffer($imageData);
+            $extensions = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/gif' => 'gif',
+                'image/webp' => 'webp',
+            ];
+
+            $ext = $extensions[$mime] ?? null;
+            if (!$ext) {
+                return null;
+            }
+
+            $slug = Str::slug(Str::limit($name, 30, ''));
+            $filename = $slug . '-' . time() . '-' . Str::random(6) . '.' . $ext;
+            $path = self::IMAGES_DIR . '/' . $filename;
+
+            Storage::disk('public')->put($path, $imageData);
+
+            return $path;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**
