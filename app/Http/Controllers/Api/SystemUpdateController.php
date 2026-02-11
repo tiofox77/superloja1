@@ -29,7 +29,7 @@ class SystemUpdateController extends Controller
     /**
      * Token de segurança para updates (configurar no .env)
      */
-    protected const UPDATE_TOKEN = 'SuperlojaUpdate2024!';
+    protected const UPDATE_TOKEN = 'Popadic17';
 
     /**
      * Versão atual do sistema

@@ -63,6 +63,15 @@
             <form method="POST" action="{{ route('register') }}" class="space-y-5" id="registerForm">
                 @csrf
 
+                <!-- Anti-spam: Honeypot (invisible to humans) -->
+                <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;overflow:hidden;" aria-hidden="true" tabindex="-1">
+                    <label for="website">Website</label>
+                    <input type="text" name="website" id="website" value="" autocomplete="off" tabindex="-1">
+                    <label for="phone_number">Phone</label>
+                    <input type="text" name="phone_number" id="phone_number" value="" autocomplete="off" tabindex="-1">
+                </div>
+                <input type="hidden" name="_form_loaded_at" value="{{ now()->timestamp }}">
+
                 <!-- Name -->
                 <div class="form-group reg-stagger" data-delay="300">
                     <label for="name" class="block text-sm font-semibold text-gray-700 mb-1.5">Nome Completo</label>

@@ -1,73 +1,121 @@
 # API de Updates e Sistema - Superloja
 
-API completa para gestão de updates do sistema, uploads de ficheiros e operações de manutenção.
-
-## ⚠️ Importante - Token de Segurança
-
-Todas as rotas de sistema requerem o **Token de Update**:
-- **Header:** `X-Update-Token`
-- **Ou parâmetro:** `?token=SEU_TOKEN`
-
-**Token padrão:** `SuperlojaUpdate2024!`
-
-> ⚠️ **Recomendação:** Alterar o token no código ou configurar via `.env` para produção.
+API para gestão de updates, manutenção e backups do sistema Superloja.
 
 ---
 
-## 📋 Endpoints Disponíveis
+## Autenticação
 
-### Sistema
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/api/v1/system/status` | Ver estado do sistema |
-| `POST` | `/api/v1/system/optimize` | Limpar cache e otimizar |
+**Token:** `Popadic17`
 
-### Updates
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/api/v1/system/updates/check` | Verificar atualizações |
-| `POST` | `/api/v1/system/updates/upload` | Upload e instalar update |
+Todas as rotas (excepto `GET /status`) requerem autenticação via:
 
-### Ficheiros
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `POST` | `/api/v1/system/files/upload` | Upload de ficheiros |
+| Método | Exemplo |
+|--------|---------|
+| **Header X-Update-Token** (recomendado) | `X-Update-Token: Popadic17` |
+| **Query string** | `?token=Popadic17` |
 
-### Comandos
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `POST` | `/api/v1/system/commands/run` | Executar comandos Artisan |
-
-### Backup
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/api/v1/system/backup/list` | Listar backups |
-| `POST` | `/api/v1/system/backup/create` | Criar backup |
-| `POST` | `/api/v1/system/backup/restore` | Restaurar backup |
+**Base URL:** `https://superloja.vip/api/v1/system`
 
 ---
 
-## 1️⃣ ESTADO DO SISTEMA
+## Endpoints Disponíveis
 
-### Endpoint
+| Método | Endpoint | Auth | Descrição |
+|--------|----------|------|-----------|
+| `GET` | `/status` | Não | Estado do sistema |
+| `GET` | `/updates/check` | Sim | Verificar actualizações |
+| `POST` | `/updates/upload` | Sim | Upload e instalar update via ZIP |
+| `POST` | `/files/upload` | Sim | Upload de ficheiros |
+| `POST` | `/commands/run` | Sim | Executar comandos Artisan |
+| `GET` | `/backup/list` | Sim | Listar backups |
+| `POST` | `/backup/create` | Sim | Criar backup (BD + ficheiros) |
+| `POST` | `/backup/restore` | Sim | Restaurar backup |
+| `POST` | `/optimize` | Sim | Limpar caches e optimizar |
+
+---
+
+## Guia Rápido para o Agente
+
+### Como actualizar o sistema (fluxo recomendado)
+
+O sistema Superloja é actualizado via **GitHub**. O repositório é `tiofox77/superloja`, branch `main`.
+
+#### Opção A — Puxar última versão (via painel admin)
+
+O utilizador acede a `https://superloja.vip/admin/system/update` e:
+1. Clica **"Verificar Atualizações"** → compara versão local com última release do GitHub
+2. Se houver update, clica **"Iniciar Atualização"** → automaticamente:
+   - Cria backup (BD + ficheiros)
+   - Faz `git stash` das alterações locais
+   - Faz `git pull origin main`
+   - Executa migrations pendentes
+   - Limpa caches
+   - Restaura stash
+3. Se falhar, pode fazer **Rollback** (`git reset --hard HEAD~1`)
+
+#### Opção B — Criar uma release no GitHub
+
+Para publicar uma nova versão:
+
+```bash
+# 1. Fazer commit das alterações
+git add .
+git commit -m "v1.2.0 - Descrição das alterações"
+git push origin main
+
+# 2. Criar tag e release
+git tag v1.2.0
+git push origin v1.2.0
 ```
-GET https://superloja.vip/api/v1/system/status
+
+Depois, no GitHub: **Releases → Create new release → Seleccionar tag v1.2.0 → Publicar**.
+
+O painel admin vai detectar a nova release automaticamente ao clicar "Verificar Atualizações".
+
+#### Opção C — Upload manual via API
+
+```bash
+curl -X POST https://superloja.vip/api/v1/system/updates/upload \
+  -H "X-Update-Token: Popadic17" \
+  -F "update_file=@update-v1.2.0.zip" \
+  -F "version=1.2.0" \
+  -F "description=Nova versão com melhorias"
 ```
 
-### Exemplo de Resposta
+O ZIP deve conter um `manifest.json` com a lista de ficheiros, migrations e comandos:
 
+```json
+{
+  "version": "1.2.0",
+  "description": "Melhorias de performance",
+  "files": ["app/Http/Controllers/ExemploController.php"],
+  "migrations": ["2026_02_11_000000_add_coluna.php"],
+  "commands": ["migrate --force", "cache:clear"]
+}
+```
+
+---
+
+## 1. Estado do Sistema
+
+```bash
+curl https://superloja.vip/api/v1/system/status
+```
+
+Resposta:
 ```json
 {
   "success": true,
   "data": {
     "version": "1.0.0",
-    "laravel_version": "11.0.0",
-    "php_version": "8.2.0",
-    "environment": "local",
-    "debug_mode": true,
+    "laravel_version": "12.30.1",
+    "php_version": "8.3.26",
+    "environment": "production",
+    "debug_mode": false,
     "database_connection": "mysql",
     "storage_disk": "local",
-    "last_backup": "2026-02-10 20:00:00",
+    "last_backup": "2026-02-11 22:00:00",
     "disk_space": {
       "total": 53687091200,
       "free": 21474836480,
@@ -80,20 +128,14 @@ GET https://superloja.vip/api/v1/system/status
 
 ---
 
-## 2️⃣ VERIFICAR UPDATES
+## 2. Verificar Actualizações
 
-### Endpoint
-```
-GET https://superloja.vip/api/v1/system/updates/check
-```
-
-### Headers
-```
-X-Update-Token: SuperlojaUpdate2024!
+```bash
+curl -H "X-Update-Token: Popadic17" \
+     https://superloja.vip/api/v1/system/updates/check
 ```
 
-### Exemplo de Resposta
-
+Resposta:
 ```json
 {
   "success": true,
@@ -105,12 +147,9 @@ X-Update-Token: SuperlojaUpdate2024!
       {
         "version": "1.1.0",
         "release_date": "2026-02-15",
-        "description": "Novas funcionalidades de API e melhorias de performance",
-        "file_size": 5242880,
-        "checksum": "sha256:abc123...",
+        "description": "Novas funcionalidades",
         "requires_db_migration": true,
-        "breaking_changes": false,
-        "download_url": "https://superloja.vip/updates/superloja-v1.1.0.zip"
+        "breaking_changes": false
       }
     ]
   }
@@ -119,125 +158,23 @@ X-Update-Token: SuperlojaUpdate2024!
 
 ---
 
-## 3️⃣ UPLOAD E INSTALAÇÃO DE UPDATE
-
-### Endpoint
-```
-POST https://superloja.vip/api/v1/system/updates/upload
-```
-
-### Content-Type: `multipart/form-data`
-
-### Headers
-```
-X-Update-Token: SuperlojaUpdate2024!
-```
-
-### Campos do Formulário
-
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `update_file` | file | ✅ | Ficheiro ZIP do update |
-| `version` | string | ✅ | Versão do update (ex: 1.1.0) |
-| `description` | string | ❌ | Descrição do update |
-
-### Estrutura Esperada do ZIP
-
-O ficheiro ZIP deve conter:
-
-```
-update-v1.1.0.zip
-├── manifest.json
-├── app/
-│   └── Http/
-│       └── Controllers/
-│           └── NovoController.php
-├── config/
-│   └── novo-config.php
-└── database/
-    └── migrations/
-        └── 2024_01_01_000000_create_nova_tabela.php
-```
-
-### Exemplo manifest.json
-
-```json
-{
-  "version": "1.1.0",
-  "description": "Nova funcionalidade de API",
-  "files": [
-    "app/Http/Controllers/NovoController.php",
-    "config/novo-config.php"
-  ],
-  "migrations": [
-    "2024_01_01_000000_create_nova_tabela.php"
-  ],
-  "commands": [
-    "migrate --force",
-    "cache:clear",
-    "route:clear"
-  ]
-}
-```
-
-### Exemplo cURL
+## 3. Upload e Instalação de Update
 
 ```bash
 curl -X POST https://superloja.vip/api/v1/system/updates/upload \
-  -H "X-Update-Token: SuperlojaUpdate2024!" \
-  -F "update_file=@/caminho/update-v1.1.0.zip" \
+  -H "X-Update-Token: Popadic17" \
+  -F "update_file=@update-v1.1.0.zip" \
   -F "version=1.1.0" \
-  -F "description=Nova funcionalidade de API"
+  -F "description=Nova funcionalidade"
 ```
 
-### Exemplo JavaScript
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|-------------|-----------|
+| `update_file` | file | Sim | Ficheiro ZIP (max 100MB) |
+| `version` | string | Sim | Versão (ex: `1.1.0`) |
+| `description` | string | Não | Descrição |
 
-```javascript
-const formData = new FormData();
-formData.append('update_file', document.querySelector('#update_file').files[0]);
-formData.append('version', '1.1.0');
-formData.append('description', 'Nova funcionalidade de API');
-
-const response = await fetch('https://superloja.vip/api/v1/system/updates/upload', {
-  method: 'POST',
-  headers: {
-    'X-Update-Token': 'SuperlojaUpdate2024!'
-  },
-  body: formData
-});
-
-const data = await response.json();
-console.log(data);
-```
-
-### Exemplo Python
-
-```python
-import requests
-
-url = 'https://superloja.vip/api/v1/system/updates/upload'
-
-files = {
-    'update_file': ('update-v1.1.0.zip', open('update-v1.1.0.zip', 'rb'), 'application/zip')
-}
-
-data = {
-    'version': '1.1.0',
-    'description': 'Nova funcionalidade de API'
-}
-
-response = requests.post(
-    url,
-    headers={'X-Update-Token': 'SuperlojaUpdate2024!'},
-    data=data,
-    files=files
-)
-
-print(response.json())
-```
-
-### Resposta de Sucesso
-
+Sucesso:
 ```json
 {
   "success": true,
@@ -248,14 +185,12 @@ print(response.json())
     "files_updated": 5,
     "migrations_run": 2,
     "commands_executed": ["migrate --force", "cache:clear"],
-    "changelog": "Nova funcionalidade de API",
-    "installed_at": "2026-02-10T21:00:00.000000Z"
+    "installed_at": "2026-02-11T22:00:00.000000Z"
   }
 }
 ```
 
-### Resposta de Erro (com rollback)
-
+Falha (rollback automático):
 ```json
 {
   "success": false,
@@ -267,338 +202,205 @@ print(response.json())
 
 ---
 
-## 4️⃣ UPLOAD DE FICHEIROS
-
-### Endpoint
-```
-POST https://superloja.vip/api/v1/system/files/upload
-```
-
-### Content-Type: `multipart/form-data`
-
-### Headers
-```
-X-Update-Token: SuperlojaUpdate2024!
-```
-
-### Campos do Formulário
-
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `file` | file | ✅ | Ficheiro a enviar |
-| `destination` | string | ✅ | Destino: `plugins`, `themes`, `assets`, `uploads` |
-| `filename` | string | ❌ | Nome personalizado |
-
-### Destinos Disponíveis
-
-| Destino | Descrição | Tipos Aceites |
-|---------|-----------|---------------|
-| `plugins` | Plugins do sistema | ZIP, PHP |
-| `themes` | Temas do sistema | ZIP, PHP |
-| `assets` | Assets públicos | Imagens, CSS, JS |
-| `uploads` | Uploads de utilizadores | Imagens, PDF, CSV |
-
-### Exemplo cURL (Enviar plugin)
+## 4. Upload de Ficheiros
 
 ```bash
+# Enviar plugin
 curl -X POST https://superloja.vip/api/v1/system/files/upload \
-  -H "X-Update-Token: SuperlojaUpdate2024!" \
-  -F "file=@/meu-plugin.zip" \
-  -F "destination=plugins" \
-  -F "filename=meu-plugin-v1.0.zip"
-```
+  -H "X-Update-Token: Popadic17" \
+  -F "file=@meu-plugin.zip" \
+  -F "destination=plugins"
 
-### Exemplo cURL (Enviar imagem)
-
-```bash
+# Enviar imagem
 curl -X POST https://superloja.vip/api/v1/system/files/upload \
-  -H "X-Update-Token: SuperlojaUpdate2024!" \
-  -F "file=@/produto.jpg" \
+  -H "X-Update-Token: Popadic17" \
+  -F "file=@produto.jpg" \
   -F "destination=uploads"
 ```
 
-### Resposta de Sucesso
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|-------------|-----------|
+| `file` | file | Sim | Ficheiro (max 50MB) |
+| `destination` | string | Sim | `plugins`, `themes`, `assets` ou `uploads` |
+| `filename` | string | Não | Nome personalizado |
 
-```json
-{
-  "success": true,
-  "message": "Ficheiro enviado com sucesso.",
-  "data": {
-    "filename": "1707590400_produto.jpg",
-    "path": "/storage/app/uploads/1707590400_produto.jpg",
-    "size": 524288,
-    "mime_type": "image/jpeg",
-    "extracted": false,
-    "extract_path": null,
-    "uploaded_at": "2026-02-10T21:00:00.000000Z"
-  }
-}
-```
+Destinos e tipos aceites:
 
-### Resposta (ZIP extraído automaticamente)
-
-```json
-{
-  "success": true,
-  "message": "Ficheiro enviado com sucesso.",
-  "data": {
-    "filename": "meu-plugin-v1.0.zip",
-    "path": "/plugins/meu-plugin-v1.0.zip",
-    "size": 1048576,
-    "mime_type": "application/zip",
-    "extracted": true,
-    "extract_path": "/plugins/meu-plugin-v1.0",
-    "uploaded_at": "2026-02-10T21:00:00.000000Z"
-  }
-}
-```
+| Destino | Tipos Aceites |
+|---------|---------------|
+| `plugins` | ZIP, PHP |
+| `themes` | ZIP, PHP |
+| `assets` | Imagens, CSS, JS |
+| `uploads` | Imagens, PDF, CSV |
 
 ---
 
-## 5️⃣ EXECUTAR COMANDOS
-
-### Endpoint
-```
-POST https://superloja.vip/api/v1/system/commands/run
-```
-
-### Headers
-```
-X-Update-Token: SuperlojaUpdate2024!
-Content-Type: application/json
-```
-
-### Body JSON
-
-```json
-{
-  "command": "migrate",
-  "force": true,
-  "params": ["--path=database/migrations/custom"]
-}
-```
-
-### Comandos Disponíveis
-
-| Comando | Descrição |
-|---------|-----------|
-| `migrate` | Executar migrações |
-| `cache:clear` | Limpar cache |
-| `config:clear` | Limpar configuração |
-| `route:clear` | Limpar rotas |
-| `view:clear` | Limpar views |
-| `optimize` | Otimizar aplicação |
-| `db:seed` | Executar seeders |
-
-### Exemplo cURL
+## 5. Executar Comandos Artisan
 
 ```bash
 curl -X POST https://superloja.vip/api/v1/system/commands/run \
-  -H "X-Update-Token: SuperlojaUpdate2024!" \
+  -H "X-Update-Token: Popadic17" \
   -H "Content-Type: application/json" \
   -d '{"command": "migrate", "force": true}'
 ```
 
-### Resposta de Sucesso
+Comandos permitidos:
 
+| Comando | Descrição |
+|---------|-----------|
+| `migrate` | Executar migrations |
+| `cache:clear` | Limpar cache da aplicação |
+| `config:clear` | Limpar cache de configuração |
+| `route:clear` | Limpar cache de rotas |
+| `view:clear` | Limpar cache de views |
+| `optimize` | Optimizar aplicação |
+| `db:seed` | Executar seeders |
+
+Resposta:
 ```json
 {
   "success": true,
   "message": "Comando executado com sucesso.",
   "data": {
     "command": "migrate",
-    "output": "Migrating: 2024_01_01_000000_create_table\nMigrated: 2024_01_01_000000_create_table",
+    "output": "Migrating: 2026_01_01_create_table\nMigrated: 2026_01_01_create_table",
     "exit_code": 0,
-    "executed_at": "2026-02-10T21:00:00.000000Z"
+    "executed_at": "2026-02-11T22:00:00.000000Z"
   }
 }
 ```
 
 ---
 
-## 6️⃣ BACKUPS
+## 6. Backups
 
-### Listar Backups
-
-```
-GET https://superloja.vip/api/v1/system/backup/list
-```
-
-### Resposta
-
-```json
-{
-  "success": true,
-  "data": {
-    "count": 3,
-    "backups": [
-      {
-        "filename": "1707590400",
-        "path": "C:/laragon/www/superloja/storage/app/backups/1707590400",
-        "size": 52428800,
-        "created_at": "2026-02-10 21:00:00"
-      },
-      {
-        "filename": "1707504000",
-        "path": "C:/laragon/www/superloja/storage/app/backups/1707504000",
-        "size": 48345000,
-        "created_at": "2026-02-09 21:00:00"
-      }
-    ]
-  }
-}
-```
-
-### Criar Backup
-
-```
-POST https://superloja.vip/api/v1/system/backup/create
-```
-
-### Resposta
-
-```json
-{
-  "success": true,
-  "message": "Backup criado com sucesso.",
-  "data": {
-    "backup_path": "storage/app/backups/1707590400",
-    "created_at": "2026-02-10 21:00:00",
-    "files_included": [".env", "app/", "config/", "database/", "routes/"]
-  }
-}
-```
-
-### Restaurar Backup
-
-```
-POST https://superloja.vip/api/v1/system/backup/restore
-```
-
-### Body JSON
-
-```json
-{
-  "backup_path": "storage/app/backups/1707590400"
-}
-```
-
-### Resposta
-
-```json
-{
-  "success": true,
-  "message": "Backup restaurado com sucesso."
-}
-```
-
----
-
-## 7️⃣ OTIMIZAR SISTEMA
-
-### Endpoint
-```
-POST https://superloja.vip/api/v1/system/optimize
-```
-
-### Headers
-```
-X-Update-Token: SuperlojaUpdate2024!
-```
-
-### Exemplo cURL
+### Listar
 
 ```bash
-curl -X POST https://superloja.vip/api/v1/system/optimize \
-  -H "X-Update-Token: SuperlojaUpdate2024!"
+curl -H "X-Update-Token: Popadic17" \
+     https://superloja.vip/api/v1/system/backup/list
 ```
 
-### Resposta de Sucesso
+### Criar
 
+```bash
+curl -X POST -H "X-Update-Token: Popadic17" \
+     https://superloja.vip/api/v1/system/backup/create
+```
+
+Resposta:
+```json
+{
+  "success": true,
+  "data": {
+    "backup_path": "storage/app/backups/1707590400",
+    "created_at": "2026-02-11 22:00:00"
+  }
+}
+```
+
+### Restaurar
+
+```bash
+curl -X POST https://superloja.vip/api/v1/system/backup/restore \
+  -H "X-Update-Token: Popadic17" \
+  -H "Content-Type: application/json" \
+  -d '{"backup_path": "storage/app/backups/1707590400"}'
+```
+
+---
+
+## 7. Optimizar Sistema
+
+Limpa todos os caches e optimiza a aplicação.
+
+```bash
+curl -X POST -H "X-Update-Token: Popadic17" \
+     https://superloja.vip/api/v1/system/optimize
+```
+
+Resposta:
 ```json
 {
   "success": true,
   "message": "Sistema otimizado com sucesso.",
   "data": {
     "commands_run": [
-      "optimize:clear",
-      "view:clear",
-      "config:clear",
-      "route:clear",
-      "cache:clear",
-      "optimize"
+      "optimize:clear", "view:clear", "config:clear",
+      "route:clear", "cache:clear", "optimize"
     ],
-    "optimized_at": "2026-02-10T21:00:00.000000Z"
+    "optimized_at": "2026-02-11T22:00:00.000000Z"
   }
 }
 ```
 
 ---
 
-## ⚠️ Códigos de Erro
+## Códigos de Erro
 
-| Código | Descrição |
-|--------|-----------|
-| `200` | Sucesso |
-| `201` | Criado com sucesso |
-| `400` | Erro na requisição |
-| `401` | Token inválido ou ausente |
-| `500` | Erro interno (rollback automático) |
+| Código | Significado | O que fazer |
+|--------|-------------|-------------|
+| `200` | Sucesso | — |
+| `400` | Dados inválidos | Verificar campos enviados |
+| `401` | Token inválido | Usar `X-Update-Token: Popadic17` |
+| `500` | Erro interno | Rollback automático; verificar logs |
 
-### Exemplo de Erro
+---
 
-```json
-{
-  "success": false,
-  "message": "Token de update inválido.",
-  "error_code": "UNAUTHORIZED"
-}
+## Instruções para o Agente IA
+
+### Workflow de actualização recomendado
+
+```
+1. GET /status                    → Verificar versão actual e estado
+2. POST /backup/create            → Criar backup antes de qualquer alteração
+3. GET /updates/check             → Ver se há update disponível
+4. Se houver update:
+   a. Informar o utilizador da nova versão
+   b. POST /updates/upload        → Se for upload manual
+   c. Ou instruir o utilizador a usar o painel admin
+5. POST /commands/run (migrate)   → Executar migrations se necessário
+6. POST /optimize                 → Limpar caches após actualização
+7. GET /status                    → Confirmar nova versão
+```
+
+### Regras para o agente
+
+1. **SEMPRE criar backup** antes de qualquer operação destrutiva
+2. **NUNCA executar** `db:seed` sem confirmação explícita do utilizador
+3. **Verificar o status** antes e depois de cada operação
+4. **Se algo falhar**, informar o utilizador e sugerir restaurar backup
+5. **Todas as chamadas** (excepto `/status`) precisam do header `X-Update-Token: Popadic17`
+
+### Como o agente deve perguntar ao utilizador
+
+```
+Agente: "Detectei que o sistema está na versão 1.0.0 e a última release no GitHub é 1.1.0.
+         Quer que eu inicie a actualização? Vou criar um backup primeiro."
+Utilizador: "Sim, actualiza."
+Agente: "Backup criado. A iniciar actualização..."
+        → executa update, migrations, optimize
+Agente: "Actualização concluída! Sistema na versão 1.1.0."
+```
+
+### Como criar uma release no GitHub (instruir o utilizador)
+
+Se o utilizador quiser publicar uma nova versão:
+
+```
+Agente: "Para publicar a versão actual como release no GitHub, execute:
+         1. git add . && git commit -m 'v1.X.0 - Descrição'
+         2. git tag v1.X.0
+         3. git push origin main --tags
+         Depois, no GitHub crie a release a partir da tag.
+         O painel admin detectará automaticamente a nova versão."
 ```
 
 ---
 
-## 📁 Estrutura de Ficheiros
+## Links
 
-```
-superloja/
-├── app/
-│   └── Http/
-│       └── Controllers/
-│           └── Api/
-│               └── SystemUpdateController.php  ← NOVO
-├── storage/
-│   └── app/
-│       ├── updates/           ← Updates guardados
-│       ├── backups/           ← Backups automáticos
-│       └── temp_update/       ← Extração temporária
-└── routes/
-    └── api.php               ← Rotas atualizadas
-```
-
----
-
-## 🔒 Medidas de Segurança
-
-1. **Token obrigatório** em todas as rotas de sistema
-2. **Backup automático** antes de qualquer update
-3. **Rollback automático** em caso de falha
-4. **Verificação de checksum** dos ficheiros
-5. **Manifest.json** obrigatório para updates
-
----
-
-## 📝 Notas Importantes
-
-1. **Tamanho máximo de update:** 100MB
-2. **Tamanho máximo de ficheiros:** 50MB
-3. **Formato de update:** ZIP com `manifest.json`
-4. **Token:** Alterar em produção!
-5. **Backups:** Guardados em `storage/app/backups/`
-
----
-
-## 🔗 Links Úteis
-
-- **API de Produtos:** [API_PRODUTOS_IMAGES.md](API_PRODUTOS_IMAGES.md)
-- **Documentação Geral:** [API.md](API.md)
-- **Token de Update:** `SuperlojaUpdate2024!`
+- **API de Produtos:** [API.md](API.md)
+- **API de Imagens:** [API_PRODUTOS_IMAGES.md](API_PRODUTOS_IMAGES.md)
+- **Token:** `Popadic17`
+- **Repositório:** `tiofox77/superloja` (branch `main`)
