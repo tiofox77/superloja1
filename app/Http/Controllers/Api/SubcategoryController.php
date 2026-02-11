@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -15,52 +16,62 @@ class SubcategoryController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Category::query()
-            ->whereNotNull('parent_id')
-            ->with(['parent:id,name,slug'])
-            ->withCount('products');
+        $cacheKey = 'api_subcategories_' . md5(json_encode($request->all()));
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $result = Cache::remember($cacheKey, 120, function () use ($request) {
+            $query = Category::query()
+                ->whereNotNull('parent_id')
+                ->with(['parent:id,name,slug'])
+                ->withCount('products');
 
-        if ($request->filled('parent_id')) {
-            $query->where('parent_id', $request->parent_id);
-        }
+            if ($request->filled('search')) {
+                $query->where('name', 'like', '%' . $request->search . '%');
+            }
 
-        if ($request->filled('is_active')) {
-            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
-        }
+            if ($request->filled('parent_id')) {
+                $query->where('parent_id', $request->parent_id);
+            }
 
-        $query->ordered();
+            if ($request->filled('is_active')) {
+                $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+            }
 
-        $perPage = min((int) $request->input('per_page', 15), 100);
-        $subcategories = $query->paginate($perPage);
+            $query->ordered();
 
-        return response()->json([
-            'success' => true,
-            'data' => $subcategories->items(),
-            'meta' => [
-                'current_page' => $subcategories->currentPage(),
-                'last_page' => $subcategories->lastPage(),
-                'per_page' => $subcategories->perPage(),
-                'total' => $subcategories->total(),
-            ],
-        ]);
+            $perPage = min((int) $request->input('per_page', 15), 30);
+            $subcategories = $query->paginate($perPage);
+
+            return [
+                'success' => true,
+                'data' => $subcategories->items(),
+                'meta' => [
+                    'current_page' => $subcategories->currentPage(),
+                    'last_page' => $subcategories->lastPage(),
+                    'per_page' => $subcategories->perPage(),
+                    'total' => $subcategories->total(),
+                ],
+            ];
+        });
+
+        return response()->json($result);
     }
 
     public function show(int $id): JsonResponse
     {
-        $subcategory = Category::whereNotNull('parent_id')
-            ->with(['parent:id,name,slug'])
-            ->withCount('products')
-            ->find($id);
+        $result = Cache::remember("api_subcategory_{$id}", 120, function () use ($id) {
+            $subcategory = Category::whereNotNull('parent_id')
+                ->with(['parent:id,name,slug'])
+                ->withCount('products')
+                ->find($id);
 
-        if (!$subcategory) {
+            return $subcategory ?: null;
+        });
+
+        if (!$result) {
             return response()->json(['success' => false, 'message' => 'Subcategoria não encontrada.'], 404);
         }
 
-        return response()->json(['success' => true, 'data' => $subcategory]);
+        return response()->json(['success' => true, 'data' => $result]);
     }
 
     public function store(Request $request): JsonResponse

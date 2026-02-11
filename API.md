@@ -7,6 +7,40 @@ API REST para gerenciamento de produtos, categorias, subcategorias, marcas e ven
 - **Base URL:** `https://superloja.vip/api/v1`
 - **Formato:** JSON
 - **Autenticação:** Token Bearer
+- **Rate Limit:** 30 pedidos/minuto por IP
+- **Máximo por página:** 30 itens (`per_page` max 30)
+
+---
+
+## ⚠️ REGRAS OBRIGATÓRIAS PARA AGENTES IA
+
+> **LEIA ANTES DE FAZER QUALQUER PEDIDO. O servidor tem recursos limitados.**
+
+1. **Máximo 30 pedidos por minuto** — se exceder, recebe HTTP `429 Too Many Requests`
+2. **Esperar 2 segundos entre cada pedido** — NUNCA fazer pedidos em paralelo/simultâneos
+3. **Usar `per_page=10` a `per_page=15`** — NUNCA pedir mais de 30 por página
+4. **Respostas são cached 60-120s** — não repetir o mesmo pedido em menos de 1 minuto
+5. **Se receber erro 429 ou timeout**, parar por 30 segundos antes de tentar novamente
+6. **NUNCA fazer loops rápidos** (ex: iterar todas as páginas sem delay)
+7. **Fazer apenas os pedidos necessários** — guardar dados em memória e reutilizar
+
+### Exemplo correcto (com delay)
+```python
+import time
+
+# BOM: esperar entre pedidos
+for page in range(1, 4):
+    response = requests.get(f"{BASE_URL}/products?page={page}&per_page=10", headers=HEADERS)
+    time.sleep(2)  # OBRIGATÓRIO: esperar 2s
+```
+
+### Exemplo ERRADO (vai derrubar o servidor)
+```python
+# MAU: pedidos simultâneos sem delay — VAI CAUSAR TIMEOUT
+import asyncio
+tasks = [fetch(f"/products?page={i}") for i in range(1, 50)]  # PROIBIDO!
+await asyncio.gather(*tasks)  # NUNCA FAZER ISTO
+```
 
 ---
 
@@ -111,7 +145,7 @@ GET /api/v1/products
 | `max_price` | float | Preço máximo |
 | `sort_by` | string | Ordenar por: `name`, `price`, `stock_quantity`, `created_at`, `order_count`, `view_count` |
 | `sort_dir` | string | Direção: `asc` ou `desc` |
-| `per_page` | int | Itens por página (max 100, default 15) |
+| `per_page` | int | Itens por página (max 30, default 15) |
 | `page` | int | Número da página |
 
 **Exemplo:**
@@ -155,7 +189,24 @@ GET /api/v1/products/{id}
 POST /api/v1/products
 ```
 
-**Body (JSON):**
+**Campos obrigatórios:** apenas `name` e `price`
+
+> **Defaults automáticos:** Se não forem enviados, a API preenche automaticamente:
+> - `description` → usa o `name`
+> - `sku` → gera código aleatório `API-XXXXXXXX`
+> - `slug` → gerado a partir do `name`
+> - `category_id` → usa a primeira categoria existente
+
+**Exemplo mínimo (só obrigatórios):**
+
+```json
+{
+  "name": "Fone Bluetooth JBL",
+  "price": 8500.00
+}
+```
+
+**Exemplo completo (recomendado):**
 
 ```json
 {
@@ -228,7 +279,7 @@ GET /api/v1/categories
 | `search` | string | Buscar por nome |
 | `is_active` | bool | Filtrar por status |
 | `with_children` | bool | Incluir subcategorias na resposta |
-| `per_page` | int | Itens por página (max 100) |
+| `per_page` | int | Itens por página (max 30) |
 | `page` | int | Número da página |
 
 **Exemplo com subcategorias:**
@@ -305,7 +356,7 @@ GET /api/v1/subcategories
 | `search` | string | Buscar por nome |
 | `parent_id` | int | Filtrar por categoria pai |
 | `is_active` | bool | Filtrar por status |
-| `per_page` | int | Itens por página (max 100) |
+| `per_page` | int | Itens por página (max 30) |
 | `page` | int | Número da página |
 
 **Exemplo:**
@@ -381,7 +432,7 @@ GET /api/v1/brands
 |-------|------|-----------|
 | `search` | string | Buscar por nome |
 | `is_active` | bool | Filtrar por status |
-| `per_page` | int | Itens por página (max 100) |
+| `per_page` | int | Itens por página (max 30) |
 | `page` | int | Número da página |
 
 ### Ver Marca
@@ -591,6 +642,7 @@ product
 5. **Se `featured_image_url` for `null`**, ignorar o produto (sem imagem = não postar).
 6. **Formatar preços** no padrão angolano: `39.900,00 Kz` (ponto para milhar, vírgula para decimal).
 7. **Usar `per_page=10`** e `in_stock=true` para obter lotes pequenos de produtos disponíveis.
+9. **Esperar 2 segundos entre cada pedido à API** — o servidor tem recursos limitados.
 8. **Usar `is_featured=true`** para obter apenas produtos em destaque (prioridade para posts).
 
 ### Exemplo de consulta otimizada para o agente
@@ -657,8 +709,9 @@ curl -H "Authorization: Bearer Popadic17" \
 O agente deve seguir esta ordem **antes** de criar um produto:
 
 ```
-1. Listar categorias existentes     → GET /api/v1/categories?with_children=true&is_active=true&per_page=100
-2. Listar marcas existentes         → GET /api/v1/brands?is_active=true&per_page=100
+1. Listar categorias existentes     → GET /api/v1/categories?with_children=true&is_active=true&per_page=30
+2. Listar marcas existentes         → GET /api/v1/brands?is_active=true&per_page=30
+   ⏱️ IMPORTANTE: Esperar 2 segundos entre cada pedido!
 3. Perguntar ao utilizador os dados do produto
 4. Montar o JSON com os dados
 5. Enviar o produto                 → POST /api/v1/products
@@ -942,6 +995,7 @@ AGENTE: ✅ Produto criado com sucesso! ID: 103
 | `422` | Validação falhou | Ler `errors` e corrigir os campos (ex: nome duplicado, preço inválido) |
 | `401` | Token inválido | Verificar se o token `Popadic17` está correto |
 | `404` | `category_id` ou `brand_id` inválido | Re-listar categorias/marcas e perguntar novamente |
+| `429` | Rate limit excedido | **Parar por 30 segundos**, depois tentar novamente |
 | `500` | Erro interno | Tentar novamente em 5 segundos, máximo 2 tentativas |
 
 ---

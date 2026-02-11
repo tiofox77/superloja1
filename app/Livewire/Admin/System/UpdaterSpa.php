@@ -319,26 +319,45 @@ class UpdaterSpa extends Component
 
         try {
             $branch = $this->githubBranch ?: 'main';
+            $basePath = base_path();
 
-            // Stash local changes first
-            $stash = Process::path(base_path())->run('git stash 2>&1');
+            // Stage ALL files (including untracked) and stash everything
+            Process::path($basePath)->run('git add -A 2>&1');
+            $stash = Process::path($basePath)->run('git stash --include-untracked 2>&1');
             if (str_contains($stash->output(), 'Saved working directory')) {
                 $this->addLog('info', 'Alterações locais guardadas (git stash)');
             }
 
-            // Pull
-            $result = Process::path(base_path())
+            // Try git pull first
+            $result = Process::path($basePath)
                 ->timeout(120)
                 ->run("git pull origin {$branch} 2>&1");
 
             $output = trim($result->output());
 
-            if ($result->successful()) {
+            if (!$result->successful()) {
+                // Pull failed — fallback to fetch + reset --hard
+                $this->addLog('warning', 'git pull falhou, usando fetch + reset...');
+
+                Process::path($basePath)->timeout(120)->run("git fetch origin {$branch} 2>&1");
+
+                $reset = Process::path($basePath)->run("git reset --hard origin/{$branch} 2>&1");
+                $output = trim($reset->output());
+
+                if (!$reset->successful()) {
+                    $this->addLog('error', 'Falha no git reset: ' . $output);
+                    // Try to restore stash
+                    Process::path($basePath)->run('git stash pop 2>&1');
+                    $this->failUpdate();
+                    return;
+                }
+
+                $this->addLog('success', 'Código sincronizado com o remoto (reset --hard)');
+            } else {
                 if (str_contains($output, 'Already up to date') || str_contains($output, 'Already up-to-date')) {
                     $this->addLog('info', 'Código já está atualizado');
                 } else {
                     $this->addLog('success', 'Código atualizado com sucesso!');
-                    // Log changed files
                     $lines = array_filter(explode("\n", $output));
                     foreach (array_slice($lines, 0, 10) as $line) {
                         $this->addLog('info', '→ ' . trim($line));
@@ -347,16 +366,23 @@ class UpdaterSpa extends Component
                         $this->addLog('info', '... e mais ' . (count($lines) - 10) . ' linhas');
                     }
                 }
+            }
 
-                // Update version.txt
-                if ($this->latestVersion) {
-                    file_put_contents(base_path('version.txt'), $this->latestVersion);
-                    $this->addLog('info', "Versão atualizada para {$this->latestVersion}");
-                }
-            } else {
-                $this->addLog('error', 'Falha no git pull: ' . $output);
-                $this->failUpdate();
-                return;
+            // Try to restore local-only changes (non-conflicting)
+            $pop = Process::path($basePath)->run('git stash pop 2>&1');
+            if ($pop->successful() && !str_contains($pop->output(), 'No stash entries')) {
+                $this->addLog('info', 'Alterações locais restauradas');
+            } elseif (str_contains($pop->output(), 'CONFLICT') || str_contains($pop->output(), 'error')) {
+                // Conflicts — drop stash, remote wins
+                Process::path($basePath)->run('git checkout -- . 2>&1');
+                Process::path($basePath)->run('git stash drop 2>&1');
+                $this->addLog('info', 'Conflitos de stash resolvidos (código remoto prevalece)');
+            }
+
+            // Update version.txt
+            if ($this->latestVersion) {
+                file_put_contents(base_path('version.txt'), $this->latestVersion);
+                $this->addLog('info', "Versão atualizada para {$this->latestVersion}");
             }
         } catch (\Exception $e) {
             $this->addLog('error', 'Erro ao baixar atualizações: ' . $e->getMessage());

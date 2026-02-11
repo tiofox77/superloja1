@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -15,50 +16,64 @@ class CategoryController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Category::query()
-            ->whereNull('parent_id')
-            ->withCount(['products', 'children']);
+        $cacheKey = 'api_categories_' . md5(json_encode($request->all()));
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $result = Cache::remember($cacheKey, 120, function () use ($request) {
+            $query = Category::query()
+                ->whereNull('parent_id')
+                ->withCount(['products', 'children']);
 
-        if ($request->filled('is_active')) {
-            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
-        }
+            if ($request->filled('search')) {
+                $query->where('name', 'like', '%' . $request->search . '%');
+            }
 
-        if ($request->boolean('with_children')) {
-            $query->with(['children' => fn($q) => $q->ordered()->withCount('products')]);
-        }
+            if ($request->filled('is_active')) {
+                $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+            }
 
-        $query->ordered();
+            if ($request->boolean('with_children')) {
+                $query->with(['children' => fn($q) => $q->ordered()->withCount('products')]);
+            }
 
-        $perPage = min((int) $request->input('per_page', 15), 100);
-        $categories = $query->paginate($perPage);
+            $query->ordered();
 
-        return response()->json([
-            'success' => true,
-            'data' => $categories->items(),
-            'meta' => [
-                'current_page' => $categories->currentPage(),
-                'last_page' => $categories->lastPage(),
-                'per_page' => $categories->perPage(),
-                'total' => $categories->total(),
-            ],
-        ]);
+            $perPage = min((int) $request->input('per_page', 15), 30);
+            $categories = $query->paginate($perPage);
+
+            return [
+                'success' => true,
+                'data' => $categories->items(),
+                'meta' => [
+                    'current_page' => $categories->currentPage(),
+                    'last_page' => $categories->lastPage(),
+                    'per_page' => $categories->perPage(),
+                    'total' => $categories->total(),
+                ],
+            ];
+        });
+
+        return response()->json($result);
     }
 
     public function show(int $id): JsonResponse
     {
-        $category = Category::withCount(['products', 'children'])
-            ->with(['children' => fn($q) => $q->ordered()->withCount('products')])
-            ->find($id);
+        $result = Cache::remember("api_category_{$id}", 120, function () use ($id) {
+            $category = Category::withCount(['products', 'children'])
+                ->with(['children' => fn($q) => $q->ordered()->withCount('products')])
+                ->find($id);
 
-        if (!$category || $category->parent_id !== null) {
+            if (!$category || $category->parent_id !== null) {
+                return null;
+            }
+
+            return $category;
+        });
+
+        if (!$result) {
             return response()->json(['success' => false, 'message' => 'Categoria não encontrada.'], 404);
         }
 
-        return response()->json(['success' => true, 'data' => $category]);
+        return response()->json(['success' => true, 'data' => $result]);
     }
 
     public function store(Request $request): JsonResponse

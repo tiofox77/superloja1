@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -29,67 +30,73 @@ class ProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Product::query()
-            ->select(self::API_FIELDS);
+        // Cache por 60s baseado nos parâmetros do request
+        $cacheKey = 'api_products_' . md5(json_encode($request->all()));
 
-        if ($request->filled('search')) {
-            $query->search($request->search);
-        }
+        $result = Cache::remember($cacheKey, 60, function () use ($request) {
+            $query = Product::query()
+                ->select(self::API_FIELDS);
 
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
+            if ($request->filled('search')) {
+                $query->search($request->search);
+            }
 
-        if ($request->filled('brand_id')) {
-            $query->where('brand_id', $request->brand_id);
-        }
+            if ($request->filled('category_id')) {
+                $query->where('category_id', $request->category_id);
+            }
 
-        if ($request->filled('is_active')) {
-            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
-        }
+            if ($request->filled('brand_id')) {
+                $query->where('brand_id', $request->brand_id);
+            }
 
-        if ($request->filled('is_featured')) {
-            $query->where('is_featured', filter_var($request->is_featured, FILTER_VALIDATE_BOOLEAN));
-        }
+            if ($request->filled('is_active')) {
+                $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+            }
 
-        if ($request->filled('in_stock')) {
-            $query->where('stock_quantity', '>', 0);
-        }
+            if ($request->filled('is_featured')) {
+                $query->where('is_featured', filter_var($request->is_featured, FILTER_VALIDATE_BOOLEAN));
+            }
 
-        if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
+            if ($request->filled('in_stock')) {
+                $query->where('stock_quantity', '>', 0);
+            }
 
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
+            if ($request->filled('min_price')) {
+                $query->where('price', '>=', $request->min_price);
+            }
 
-        $sortBy = $request->input('sort_by', 'created_at');
-        $sortDir = $request->input('sort_dir', 'desc');
-        $allowedSorts = ['name', 'price', 'stock_quantity', 'created_at', 'order_count', 'view_count'];
-        
-        if (in_array($sortBy, $allowedSorts)) {
-            $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
-        }
+            if ($request->filled('max_price')) {
+                $query->where('price', '<=', $request->max_price);
+            }
 
-        $perPage = min((int) $request->input('per_page', 15), 100);
-        $products = $query->paginate($perPage);
+            $sortBy = $request->input('sort_by', 'created_at');
+            $sortDir = $request->input('sort_dir', 'desc');
+            $allowedSorts = ['name', 'price', 'stock_quantity', 'created_at', 'order_count', 'view_count'];
+            
+            if (in_array($sortBy, $allowedSorts)) {
+                $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
+            }
 
-        // Formatar resposta leve
-        $products->getCollection()->transform(function ($product) {
-            return $this->formatProduct($product);
+            $perPage = min((int) $request->input('per_page', 15), 30);
+            $products = $query->paginate($perPage);
+
+            $products->getCollection()->transform(function ($product) {
+                return $this->formatProduct($product);
+            });
+
+            return [
+                'success' => true,
+                'data' => $products->items(),
+                'meta' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                ],
+            ];
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => $products->items(),
-            'meta' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-            ],
-        ]);
+        return response()->json($result);
     }
 
     /**
@@ -97,13 +104,21 @@ class ProductController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $product = Product::select(self::API_FIELDS)->find($id);
+        $result = Cache::remember("api_product_{$id}", 60, function () use ($id) {
+            $product = Product::select(self::API_FIELDS)->find($id);
 
-        if (!$product) {
+            if (!$product) {
+                return null;
+            }
+
+            return $this->formatProduct($product);
+        });
+
+        if (!$result) {
             return response()->json(['success' => false, 'message' => 'Produto não encontrado.'], 404);
         }
 
-        return response()->json(['success' => true, 'data' => $this->formatProduct($product)]);
+        return response()->json(['success' => true, 'data' => $result]);
     }
 
     /**
@@ -150,6 +165,17 @@ class ProductController extends Controller
         // Gerar slug automaticamente se não fornecido
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['name']);
+        }
+
+        // Defaults para campos NOT NULL na BD
+        if (empty($validated['description'])) {
+            $validated['description'] = $validated['name'];
+        }
+        if (empty($validated['sku'])) {
+            $validated['sku'] = 'API-' . strtoupper(Str::random(8));
+        }
+        if (empty($validated['category_id'])) {
+            $validated['category_id'] = \App\Models\Category::first()?->id ?? 1;
         }
 
         // Processar imagem de destaque (upload)

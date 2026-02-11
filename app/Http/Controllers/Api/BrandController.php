@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -15,42 +16,51 @@ class BrandController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Brand::query()->withCount('products');
+        $cacheKey = 'api_brands_' . md5(json_encode($request->all()));
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $result = Cache::remember($cacheKey, 120, function () use ($request) {
+            $query = Brand::query()->withCount('products');
 
-        if ($request->filled('is_active')) {
-            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
-        }
+            if ($request->filled('search')) {
+                $query->where('name', 'like', '%' . $request->search . '%');
+            }
 
-        $query->ordered();
+            if ($request->filled('is_active')) {
+                $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+            }
 
-        $perPage = min((int) $request->input('per_page', 15), 100);
-        $brands = $query->paginate($perPage);
+            $query->ordered();
 
-        return response()->json([
-            'success' => true,
-            'data' => $brands->items(),
-            'meta' => [
-                'current_page' => $brands->currentPage(),
-                'last_page' => $brands->lastPage(),
-                'per_page' => $brands->perPage(),
-                'total' => $brands->total(),
-            ],
-        ]);
+            $perPage = min((int) $request->input('per_page', 15), 30);
+            $brands = $query->paginate($perPage);
+
+            return [
+                'success' => true,
+                'data' => $brands->items(),
+                'meta' => [
+                    'current_page' => $brands->currentPage(),
+                    'last_page' => $brands->lastPage(),
+                    'per_page' => $brands->perPage(),
+                    'total' => $brands->total(),
+                ],
+            ];
+        });
+
+        return response()->json($result);
     }
 
     public function show(int $id): JsonResponse
     {
-        $brand = Brand::withCount('products')->find($id);
+        $result = Cache::remember("api_brand_{$id}", 120, function () use ($id) {
+            $brand = Brand::withCount('products')->find($id);
+            return $brand ?: null;
+        });
 
-        if (!$brand) {
+        if (!$result) {
             return response()->json(['success' => false, 'message' => 'Marca não encontrada.'], 404);
         }
 
-        return response()->json(['success' => true, 'data' => $brand]);
+        return response()->json(['success' => true, 'data' => $result]);
     }
 
     public function store(Request $request): JsonResponse

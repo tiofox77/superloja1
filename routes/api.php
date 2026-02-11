@@ -15,8 +15,8 @@ use App\Http\Controllers\Api\SystemUpdateController;
 |--------------------------------------------------------------------------
 */
 
-// Protected API routes (require api_token)
-Route::middleware('api_token')->prefix('v1')->group(function () {
+// Protected API routes (require api_token + rate limit: 30 req/min)
+Route::middleware([\App\Http\Middleware\ApiTokenMiddleware::class, 'throttle:30,1'])->prefix('v1')->group(function () {
 
     // Products CRUD
     Route::apiResource('products', ProductController::class);
