@@ -1184,3 +1184,246 @@ $response = $client->post('pos/sale', [
 | `POST` | `/api/v1/pos/sale` | Registrar venda POS |
 | `GET` | `/api/v1/pos/sales` | Listar vendas POS |
 | `GET` | `/api/v1/pos/sales/{id}` | Ver venda POS |
+
+---
+
+## 🤖 Guia Completo para Agentes IA — Como Consumir a API Sem Derrubar o Servidor
+
+> **ATENÇÃO: Este servidor está em shared hosting com recursos limitados.**
+> Se não seguires estas regras, o servidor vai cair e o teu IP será banido temporariamente.
+
+### Regras de Ouro
+
+| Regra | Valor | Consequência se violar |
+|-------|-------|----------------------|
+| Rate limit | **30 requests/minuto** | HTTP 429 + possível ban de IP |
+| Delay entre requests | **mínimo 2 segundos** | Servidor sobrecarrega e cai |
+| Requests paralelas | **PROIBIDO** | Ban imediato de IP |
+| Max por página | **30 itens** (`per_page=30`) | Resposta truncada |
+| Tamanho recomendado | `per_page=10` a `per_page=15` | — |
+| Cache das respostas | **60s produtos, 120s categorias** | Pedido repetido devolve mesmos dados |
+| Timeout de segurança | **Se receber 429 ou timeout, parar 30s** | IP banido pelo firewall |
+
+---
+
+### Fluxo Correcto para Baixar Todos os Produtos
+
+```
+1. GET /products?page=1&per_page=15  → ler meta.last_page
+2. Esperar 2 segundos
+3. GET /products?page=2&per_page=15
+4. Esperar 2 segundos
+5. ... repetir até last_page
+6. Guardar tudo em memória/ficheiro
+7. NÃO repetir o mesmo pedido durante 60 segundos (cache)
+```
+
+### Exemplo Python Completo (Seguro)
+
+```python
+import requests
+import time
+import json
+
+BASE_URL = "https://superloja.vip/api/v1"
+HEADERS = {
+    "Authorization": "Bearer Popadic17",
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+}
+
+def safe_request(method, endpoint, **kwargs):
+    """Fazer request seguro com retry e delay"""
+    url = f"{BASE_URL}/{endpoint}"
+    max_retries = 3
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.request(method, url, headers=HEADERS, timeout=15, **kwargs)
+            
+            if response.status_code == 429:
+                print("⚠️ Rate limited! Aguardando 30s...")
+                time.sleep(30)
+                continue
+            
+            if response.status_code >= 500:
+                print(f"⚠️ Erro servidor ({response.status_code}). Aguardando 10s...")
+                time.sleep(10)
+                continue
+            
+            return response
+            
+        except requests.exceptions.Timeout:
+            print(f"⚠️ Timeout! Tentativa {attempt + 1}/{max_retries}. Aguardando 15s...")
+            time.sleep(15)
+        except requests.exceptions.ConnectionError:
+            print(f"⚠️ Conexão recusada! IP pode estar banido. Aguardando 60s...")
+            time.sleep(60)
+    
+    return None
+
+# ==========================================
+# BAIXAR TODOS OS PRODUTOS (forma segura)
+# ==========================================
+def download_all_products():
+    all_products = []
+    page = 1
+    last_page = 1
+    
+    while page <= last_page:
+        response = safe_request("GET", f"products?page={page}&per_page=15")
+        
+        if not response or response.status_code != 200:
+            print(f"❌ Falha na página {page}")
+            break
+        
+        data = response.json()
+        last_page = data["meta"]["last_page"]
+        
+        for p in data["data"]:
+            all_products.append({
+                "id": p["id"],
+                "name": p["name"],
+                "description": p.get("description", ""),
+                "price": p["price"],
+                "sale_price": p.get("sale_price"),
+                "stock_quantity": p["stock_quantity"],
+                "featured_image_url": p.get("featured_image_url")
+            })
+        
+        print(f"✅ Página {page}/{last_page} — {len(data['data'])} produtos")
+        page += 1
+        
+        if page <= last_page:
+            time.sleep(2)  # ⏱️ OBRIGATÓRIO: esperar 2s
+    
+    # Guardar em ficheiro
+    with open("produtos.json", "w", encoding="utf-8") as f:
+        json.dump(all_products, f, ensure_ascii=False, indent=2)
+    
+    print(f"\n📦 Total: {len(all_products)} produtos guardados em produtos.json")
+    return all_products
+
+# ==========================================
+# CRIAR PRODUTO COM IMAGEM (forma segura)
+# ==========================================
+def create_product(name, price, image_url=None, **extras):
+    product_data = {
+        "name": name,
+        "price": price,
+        **extras
+    }
+    
+    if image_url:
+        product_data["featured_image_url"] = image_url
+    
+    response = safe_request("POST", "products", json=product_data)
+    
+    if response and response.status_code == 201:
+        result = response.json()
+        print(f"✅ Produto criado: ID {result['data']['id']} — {name}")
+        return result["data"]
+    else:
+        print(f"❌ Erro ao criar produto: {name}")
+        return None
+
+# ==========================================
+# ATUALIZAR PRODUTO (forma segura)
+# ==========================================
+def update_product(product_id, **fields):
+    response = safe_request("PUT", f"products/{product_id}", json=fields)
+    
+    if response and response.status_code == 200:
+        print(f"✅ Produto {product_id} atualizado")
+        return response.json()["data"]
+    else:
+        print(f"❌ Erro ao atualizar produto {product_id}")
+        return None
+
+# ==========================================
+# CRIAR VÁRIOS PRODUTOS (com delay seguro)
+# ==========================================
+def create_multiple_products(products_list):
+    created = []
+    for i, product in enumerate(products_list):
+        result = create_product(**product)
+        if result:
+            created.append(result)
+        
+        # Delay entre criações
+        if i < len(products_list) - 1:
+            time.sleep(3)  # ⏱️ 3s entre criações (mais pesado que GET)
+    
+    print(f"\n📦 Criados {len(created)}/{len(products_list)} produtos")
+    return created
+
+# ==========================================
+# EXEMPLO DE USO
+# ==========================================
+if __name__ == "__main__":
+    # Baixar catálogo completo
+    produtos = download_all_products()
+    
+    time.sleep(5)  # Pausa entre operações diferentes
+    
+    # Criar um produto com imagem
+    create_product(
+        name="Fone JBL Tune 510BT",
+        price=8500,
+        image_url="https://example.com/images/jbl-510bt.jpg",
+        description="Fone Bluetooth JBL Tune 510BT com som Pure Bass",
+        stock_quantity=50,
+        category_id=3,
+        is_active=True
+    )
+    
+    time.sleep(3)
+    
+    # Criar vários produtos
+    novos = [
+        {"name": "Cabo USB-C 1m", "price": 1500, "stock_quantity": 200},
+        {"name": "Carregador 20W", "price": 3500, "stock_quantity": 100},
+        {"name": "Película iPhone 15", "price": 2000, "stock_quantity": 150},
+    ]
+    create_multiple_products(novos)
+```
+
+### O que a IA NUNCA Deve Fazer
+
+```python
+# ❌ PROIBIDO: Requests em paralelo
+import asyncio
+tasks = [fetch(f"/products?page={i}") for i in range(1, 50)]
+await asyncio.gather(*tasks)  # VAI DERRUBAR O SERVIDOR
+
+# ❌ PROIBIDO: Loop sem delay
+for page in range(1, 100):
+    requests.get(f"{BASE_URL}/products?page={page}")  # Sem sleep = ban
+
+# ❌ PROIBIDO: per_page muito alto
+requests.get(f"{BASE_URL}/products?per_page=1000")  # Max é 30
+
+# ❌ PROIBIDO: Repetir mesma request em loop
+while True:
+    requests.get(f"{BASE_URL}/products")  # Dados são cached 60s, não muda
+
+# ❌ PROIBIDO: Ignorar erros 429
+response = requests.get(url)
+# Se response.status_code == 429 → PARAR 30 SEGUNDOS, não continuar!
+
+# ❌ PROIBIDO: Muitas criações seguidas sem delay
+for p in range(100):
+    requests.post(url, json=data)  # Sem sleep = servidor crash
+```
+
+### Resumo de Tempos de Espera
+
+| Situação | Tempo de espera |
+|----------|----------------|
+| Entre GETs normais | **2 segundos** |
+| Entre POSTs/PUTs (escrita) | **3 segundos** |
+| Após receber HTTP 429 | **30 segundos** |
+| Após timeout/erro de conexão | **60 segundos** |
+| Após erro 500 do servidor | **10 segundos** |
+| Entre operações diferentes (ex: após baixar tudo, antes de criar) | **5 segundos** |
+| Mesmo endpoint já chamado (cache) | **Não repetir antes de 60s** |

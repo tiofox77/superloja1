@@ -1,0 +1,519 @@
+{
+  "updated": "2026-02-12T20:39:23Z",
+  "total": 57,
+  "products": [
+    {
+      "id": 102,
+      "name": "Fone Bluetooth Ultra",
+      "description": "🎧 Fone Bluetooth Ultra | Som Premium ANC | 30h bateria",
+      "price": 9500,
+      "sale_price": 8500,
+      "stock_quantity": 20,
+      "image": ""
+    },
+    {
+      "id": 101,
+      "name": "Fone Bluetooth Pro",
+      "description": "Fone Bluetooth com som de alta qualidade e bateria de longa duração",
+      "price": 7500,
+      "sale_price": null,
+      "stock_quantity": 15,
+      "image": ""
+    },
+    {
+      "id": 100,
+      "name": "Fone Bluetooth Test",
+      "description": "Fone Bluetooth Test",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 20,
+      "image": ""
+    },
+    {
+      "id": 99,
+      "name": "Suporte de tripé para celular",
+      "description": "Produto de qualidade Suporte de tripé para celular",
+      "price": 6500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/suporte-de-trip-para-celular-1760979386-u9Ahjb.jpeg"
+    },
+    {
+      "id": 98,
+      "name": "Suporte de esponja multifuncional portátil para celular",
+      "description": "Produto de qualidade Suporte de esponja multifuncional portátil para celular",
+      "price": 6500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/suporte-de-esponja-multifuncional-port-til-para-celular-1760979384-30n8pU.jpeg"
+    },
+    {
+      "id": 97,
+      "name": "Reletech 1 peça Case para Disco Rígido",
+      "description": "Case de HDD",
+      "price": 7500,
+      "sale_price": null,
+      "stock_quantity": 4,
+      "image": "https://superloja.vip/storage/products/reletech-1-pe-a-case-para-disco-r-gido-1760979383-nVf9cA.jpeg"
+    },
+    {
+      "id": 96,
+      "name": "Pulseira masculina",
+      "description": "Aço inoxidável",
+      "price": 8500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/pulseira-masculina-1760979382-GzYphz.jpeg"
+    },
+    {
+      "id": 95,
+      "name": "Pingente aromatizador para carro",
+      "description": "Produto de qualidade Pingente aromatizador para carro",
+      "price": 6500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/pingente-aromatizador-para-carro-1760979381-qt86kn.jpeg"
+    },
+    {
+      "id": 94,
+      "name": "Organizador de cabos de mesa",
+      "description": "Produto de qualidade Organizador de cabos de mesa",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/organizador-de-cabos-de-mesa-1760979379-FcfuNP.jpeg"
+    },
+    {
+      "id": 93,
+      "name": "Multi-carregador tipo C",
+      "description": "Produto de qualidade Multi-carregador tipo C",
+      "price": 13500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/multi-carregador-tipo-c-1760979378-4ksBBv.jpeg"
+    },
+    {
+      "id": 92,
+      "name": "Multi-carregador",
+      "description": "Produto de qualidade Multi-carregador",
+      "price": 10000,
+      "sale_price": null,
+      "stock_quantity": 3,
+      "image": "https://superloja.vip/storage/products/multi-carregador-1760979377-W7PDTV.jpeg"
+    },
+    {
+      "id": 91,
+      "name": "Mouse Sem-Fio",
+      "description": "Produto de qualidade Mouse Sem-Fio",
+      "price": 7500,
+      "sale_price": null,
+      "stock_quantity": 3,
+      "image": "https://superloja.vip/storage/products/mouse-sem-fio-1760979376-d0Lud9.jpeg"
+    },
+    {
+      "id": 90,
+      "name": "Mouse",
+      "description": "Produto de qualidade Mouse",
+      "price": 15000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/mouse-1760979375-sVltDs.jpeg"
+    },
+    {
+      "id": 89,
+      "name": "Microfone",
+      "description": "Microfone sem fio para celular/smartphone (com entrada USB-C)\n Siatema de microfone sem fio compacto",
+      "price": 17000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/microfone-1760979374-A7fXJU.jpeg"
+    },
+    {
+      "id": 88,
+      "name": "Leitor de Cartões USB Type-C OTG (On-The-Go)",
+      "description": "Adaptador USB Muultifuncional para Cartões de Memória\n *Versalidade Universal: Permite conectar cart",
+      "price": 8000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/leitor-de-cart-es-usb-type-c-otg-on-the-go-1760979373-4w0Hwi.jpeg"
+    },
+    {
+      "id": 87,
+      "name": "KOSKY Adaptador USB (Wifi)",
+      "description": "150Mbps\n150Mbps \n150Mbps \n150Mbps ",
+      "price": 9000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/kosky-adaptador-usb-wifi-1760979371-2nUrB5.jpeg"
+    },
+    {
+      "id": 86,
+      "name": "Kit adaptador USB com vários cabos de carregamento",
+      "description": "Produto de qualidade Kit adaptador USB com vários cabos de carregamento",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 3,
+      "image": "https://superloja.vip/storage/products/kit-adaptador-usb-com-v-rios-cabos-de-carregamento-1760979370-INPzsy.jpeg"
+    },
+    {
+      "id": 85,
+      "name": "Fones de ouvido Pro6 TWS",
+      "description": "Touch Control",
+      "price": 8500,
+      "sale_price": null,
+      "stock_quantity": 4,
+      "image": "https://superloja.vip/storage/products/fones-de-ouvido-pro6-tws-1760979369-jACAPc.jpeg"
+    },
+    {
+      "id": 84,
+      "name": "Fones de ouvido com fio",
+      "description": "Produto de qualidade Fones de ouvido com fio",
+      "price": 6500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/fones-de-ouvido-com-fio-1760979368-aLhZUC.jpeg"
+    },
+    {
+      "id": 83,
+      "name": "Fones de ouvido Bluetooth sem fio Disney T19",
+      "description": "Descubra os incríveis fones de ouvido Bluetooth sem fio Disney T19! Com design exclusivo inspirado n",
+      "price": 14000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/fones-de-ouvido-bluetooth-sem-fio-disney-t19-1760979366-CrKwhX.png"
+    },
+    {
+      "id": 82,
+      "name": "Fones de ouvido  X83",
+      "description": "Produto de qualidade Fones de ouvido  X83",
+      "price": 9500,
+      "sale_price": null,
+      "stock_quantity": 6,
+      "image": "https://superloja.vip/storage/products/fones-de-ouvido-x83-1760979365-rwgabn.jpeg"
+    },
+    {
+      "id": 81,
+      "name": "Fones de ouvido  TWS sem fio",
+      "description": "Bluetooth 5.3",
+      "price": 7000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/fones-de-ouvido-tws-sem-fio-1760979364-WI9qW5.jpeg"
+    },
+    {
+      "id": 80,
+      "name": "Fones de ouvido",
+      "description": "Produto de qualidade Fones de ouvido",
+      "price": 16500,
+      "sale_price": null,
+      "stock_quantity": 5,
+      "image": "https://superloja.vip/storage/products/fones-de-ouvido-1760979363-Fd5JIl.jpeg"
+    },
+    {
+      "id": 79,
+      "name": "dove",
+      "description": "Produto de qualidade dove",
+      "price": 9000,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/dove-1760979362-ZVIUpX.png"
+    },
+    {
+      "id": 78,
+      "name": "Carregagdor USB",
+      "description": "Produto de qualidade Carregagdor USB",
+      "price": 3500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/carregagdor-usb-1760979360-hsV54l.jpeg"
+    },
+    {
+      "id": 77,
+      "name": "Carregador USB tipo C",
+      "description": "Produto de qualidade Carregador USB tipo C",
+      "price": 7500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/carregador-usb-tipo-c-1760979359-XyX1ub.jpeg"
+    },
+    {
+      "id": 76,
+      "name": "Carregador para Iphone",
+      "description": "Produto de qualidade Carregador para Iphone",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/carregador-para-iphone-1760979358-t08dQO.jpeg"
+    },
+    {
+      "id": 75,
+      "name": "Carregador Original Xiaomi Redmi 13C",
+      "description": "Produto de qualidade Carregador Original Xiaomi Redmi 13C",
+      "price": 13500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/carregador-original-xiaomi-redmi-13c-1760979356-5M9am3.jpeg"
+    },
+    {
+      "id": 74,
+      "name": "Carregador de Iphone",
+      "description": "Produto de qualidade Carregador de Iphone",
+      "price": 4500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/carregador-de-iphone-1760979355-nDYu2i.jpeg"
+    },
+    {
+      "id": 73,
+      "name": "Carregador de carro multifuncional",
+      "description": "Produto de qualidade Carregador de carro multifuncional",
+      "price": 8500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/carregador-de-carro-multifuncional-1760979354-xcVyhj.jpeg"
+    },
+    {
+      "id": 72,
+      "name": "Carregador  Portátil",
+      "description": "Produto de qualidade Carregador  Portátil",
+      "price": 7000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/carregador-port-til-1760979353-Ar7bZ4.jpeg"
+    },
+    {
+      "id": 71,
+      "name": "Caixa para SSD N.2 NVMe",
+      "description": "Produto de qualidade Caixa para SSD N.2 NVMe",
+      "price": 17000,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/caixa-para-ssd-n-2-nvme-1760979351-xopxrE.jpeg"
+    },
+    {
+      "id": 70,
+      "name": "Cabos de Carregamento Apple",
+      "description": "Produto de qualidade Cabos de Carregamento Apple",
+      "price": 4500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabos-de-carregamento-apple-1760979350-syZIWY.jpeg"
+    },
+    {
+      "id": 69,
+      "name": "Cabo USB-A",
+      "description": "Testador multifuncional de componentes eletrÔnicos",
+      "price": 15000,
+      "sale_price": null,
+      "stock_quantity": 5,
+      "image": "https://superloja.vip/storage/products/cabo-usb-a-1760979349-lPhVKG.jpeg"
+    },
+    {
+      "id": 68,
+      "name": "Cabo USB para tipo C",
+      "description": "Cabo de disco rígido, transmissão de alta velocidade de 10 Gbps, cabo de carregador rápido.",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabo-usb-para-tipo-c-1760979348-f8BgxB.jpeg"
+    },
+    {
+      "id": 67,
+      "name": "Cabo USB",
+      "description": "Iphone, iPad, iPod",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabo-usb-1760979347-bBez2Y.jpeg"
+    },
+    {
+      "id": 66,
+      "name": "Cabo Tipo C",
+      "description": "Produto de qualidade Cabo Tipo C",
+      "price": 12000,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/cabo-tipo-c-1760979345-Tzq9CC.jpeg"
+    },
+    {
+      "id": 65,
+      "name": "Cabo Micro USB",
+      "description": "Produto de qualidade Cabo Micro USB",
+      "price": 4500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/cabo-micro-usb-1760979344-5On4ov.jpeg"
+    },
+    {
+      "id": 64,
+      "name": "Cabo de programador",
+      "description": "Cabo de programador Emerson PLC da série EC aplicável SL-B2O53RASL1",
+      "price": 15500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabo-de-programador-1760979343-gTdtW5.jpeg"
+    },
+    {
+      "id": 63,
+      "name": "Cabo de Dados Tipo  C para USB",
+      "description": "Produto de qualidade Cabo de Dados Tipo  C para USB",
+      "price": 4500,
+      "sale_price": null,
+      "stock_quantity": 5,
+      "image": "https://superloja.vip/storage/products/cabo-de-dados-tipo-c-para-usb-1760979342-4PHdkk.jpeg"
+    },
+    {
+      "id": 62,
+      "name": "Cabo de carregamento USB",
+      "description": "Produto de qualidade Cabo de carregamento USB",
+      "price": 4500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/cabo-de-carregamento-usb-1760979341-43Soou.jpeg"
+    },
+    {
+      "id": 61,
+      "name": "Cabo de carregador (Apple)",
+      "description": "Produto de qualidade Cabo de carregador (Apple)",
+      "price": 6500,
+      "sale_price": null,
+      "stock_quantity": 2,
+      "image": "https://superloja.vip/storage/products/cabo-de-carregador-apple-1760979340-AlNyGU.jpeg"
+    },
+    {
+      "id": 60,
+      "name": "Cabo de carregador  USB DC",
+      "description": "Cabo de substituição para carregamento USB DC",
+      "price": 6000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabo-de-carregador-usb-dc-1760979338-x66poN.jpeg"
+    },
+    {
+      "id": 59,
+      "name": "Cabo de carregador",
+      "description": "Apple",
+      "price": 6500,
+      "sale_price": null,
+      "stock_quantity": 3,
+      "image": "https://superloja.vip/storage/products/cabo-de-carregador-1760979337-QCyaO0.jpeg"
+    },
+    {
+      "id": 58,
+      "name": "Cabo de áudio (auxiliar)",
+      "description": "Produto de qualidade Cabo de áudio (auxiliar)",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabo-de-udio-auxiliar-1760979336-CkfB8I.jpeg"
+    },
+    {
+      "id": 57,
+      "name": "Cabo adaptador USB",
+      "description": "Produto de qualidade Cabo adaptador USB",
+      "price": 7000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabo-adaptador-usb-1760979335-6AWGu1.jpeg"
+    },
+    {
+      "id": 56,
+      "name": "Cabo adaptador auxiliar para iPhone",
+      "description": "3,5mm",
+      "price": 4000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/cabo-adaptador-auxiliar-para-iphone-1760979334-BynCKC.jpeg"
+    },
+    {
+      "id": 55,
+      "name": "Adaptor de Áudio para Fones de Ouvido",
+      "description": "Produto de qualidade Adaptor de Áudio para Fones de Ouvido",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 5,
+      "image": "https://superloja.vip/storage/products/adaptor-de-udio-para-fones-de-ouvido-1760979333-qaMZ3u.jpeg"
+    },
+    {
+      "id": 54,
+      "name": "Adaptador Wifi",
+      "description": "286Mbps\n286Mbps\n286Mbps\n286Mbps\n286Mbps",
+      "price": 8500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/adaptador-wifi-1760979332-0ePEGA.jpeg"
+    },
+    {
+      "id": 53,
+      "name": "Adaptador Micro USB (Android)",
+      "description": "Produto de qualidade Adaptador Micro USB (Android)",
+      "price": 5000,
+      "sale_price": null,
+      "stock_quantity": 3,
+      "image": "https://superloja.vip/storage/products/adaptador-micro-usb-android-1760979331-3MBART.jpeg"
+    },
+    {
+      "id": 52,
+      "name": "Adaptador Grafico conversor de USB",
+      "description": "Produto de qualidade Adaptador Grafico conversor de USB",
+      "price": 8000,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/adaptador-grafico-conversor-de-usb-1760979330-m8gWPf.jpeg"
+    },
+    {
+      "id": 51,
+      "name": "Adaptador de carga",
+      "description": "Produto de qualidade Adaptador de carga",
+      "price": 5000,
+      "sale_price": null,
+      "stock_quantity": 5,
+      "image": "https://superloja.vip/storage/products/adaptador-de-carga-1760979329-SxEx4c.jpeg"
+    },
+    {
+      "id": 50,
+      "name": "Adaptador de cabo de carregador de áudio",
+      "description": "3,5 mm",
+      "price": 4500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/adaptador-de-cabo-de-carregador-de-udio-1760979328-pRzeEB.jpeg"
+    },
+    {
+      "id": 48,
+      "name": "2 em 1 Cabo Adaptador",
+      "description": "Produto de qualidade 2 em 1 Cabo Adaptador",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 4,
+      "image": "https://superloja.vip/storage/products/2-em-1-cabo-adaptador-1760979327-TvZNHS.jpeg"
+    },
+    {
+      "id": 49,
+      "name": "Adaptador de cabo (carregador)",
+      "description": "Produto de qualidade Adaptador de cabo (carregador)",
+      "price": 5500,
+      "sale_price": null,
+      "stock_quantity": 4,
+      "image": "https://superloja.vip/storage/products/adaptador-de-cabo-carregador-1760979327-T1TUYb.jpeg"
+    },
+    {
+      "id": 47,
+      "name": "Organizador de cabos",
+      "description": "Produto de qualidade Organizador de cabos",
+      "price": 4500,
+      "sale_price": null,
+      "stock_quantity": 3,
+      "image": "https://superloja.vip/storage/products/organizador-de-cabos-1760979325-9VeGhi.jpeg"
+    },
+    {
+      "id": 46,
+      "name": "Fones de ouvido sem fio TWS transparentes, com display LED de energia",
+      "description": "Produto de qualidade Fones de ouvido sem fio TWS transparentes, com display LED de energia",
+      "price": 7500,
+      "sale_price": null,
+      "stock_quantity": 1,
+      "image": "https://superloja.vip/storage/products/fones-de-ouvido-sem-fio-tws-transparentes-com-display-led-de-energia-1760979324-e6NSDk.png"
+    }
+  ]
+}

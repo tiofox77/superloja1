@@ -275,21 +275,35 @@ class ProductController extends Controller
             'meta_keywords' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'delete_images' => 'nullable|array', // Array de caminhos para删除
+            'featured_image_url' => 'nullable|url',
+            'image_urls' => 'nullable|array',
+            'image_urls.*' => 'nullable|url',
+            'delete_images' => 'nullable|array',
             'attributes' => 'nullable|array',
             'specifications' => 'nullable|array',
         ]);
 
-        // Processar nova imagem de destaque (upload)
+        // Processar nova imagem de destaque (upload de ficheiro)
         if ($request->hasFile('featured_image')) {
-            // Excluir imagem anterior se existir
             if ($product->featured_image) {
                 $this->deleteImage($product->featured_image);
             }
             $validated['featured_image'] = $this->uploadImage($request->file('featured_image'));
         }
 
-        // Processar novas imagens adicionais (upload)
+        // Processar nova imagem de destaque (URL — download automático)
+        if (empty($validated['featured_image']) && !empty($validated['featured_image_url'])) {
+            $downloaded = $this->downloadImageFromUrl($validated['featured_image_url'], $product->name);
+            if ($downloaded) {
+                if ($product->featured_image) {
+                    $this->deleteImage($product->featured_image);
+                }
+                $validated['featured_image'] = $downloaded;
+            }
+        }
+        unset($validated['featured_image_url']);
+
+        // Processar novas imagens adicionais (upload de ficheiros)
         if ($request->hasFile('images')) {
             $existingImages = $product->images ?? [];
             foreach ($request->file('images') as $image) {
@@ -297,6 +311,19 @@ class ProductController extends Controller
             }
             $validated['images'] = $existingImages;
         }
+
+        // Processar novas imagens adicionais (URLs — download automático)
+        if (!empty($validated['image_urls'])) {
+            $existingImages = $validated['images'] ?? $product->images ?? [];
+            foreach ($validated['image_urls'] as $url) {
+                $downloaded = $this->downloadImageFromUrl($url, $product->name);
+                if ($downloaded) {
+                    $existingImages[] = $downloaded;
+                }
+            }
+            $validated['images'] = $existingImages;
+        }
+        unset($validated['image_urls']);
 
         // Eliminar imagens especificadas
         if ($request->filled('delete_images')) {

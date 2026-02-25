@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\SubcategoryController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\SystemUpdateController;
+use App\Http\Middleware\ApiLogMiddleware;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +16,8 @@ use App\Http\Controllers\Api\SystemUpdateController;
 |--------------------------------------------------------------------------
 */
 
-// Protected API routes (require api_token + rate limit: 30 req/min)
-Route::middleware([\App\Http\Middleware\ApiTokenMiddleware::class, 'throttle:30,1'])->prefix('v1')->group(function () {
+// Protected API routes (require api_token + rate limit: 30 req/min + logging)
+Route::middleware([ApiLogMiddleware::class, \App\Http\Middleware\ApiTokenMiddleware::class, 'throttle:30,1'])->prefix('v1')->group(function () {
 
     // Products CRUD
     Route::apiResource('products', ProductController::class);

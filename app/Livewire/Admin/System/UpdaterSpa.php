@@ -6,6 +6,7 @@ namespace App\Livewire\Admin\System;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
@@ -287,31 +288,41 @@ class UpdaterSpa extends Component
             $this->addLog('info', "Versão alvo: {$this->latestVersion}");
         }
 
-        $this->stepBackup();
+        // Disparar primeiro passo via evento (permite UI atualizar entre passos)
+        $this->dispatch('update-step-backup');
     }
 
-    private function stepBackup(): void
+    #[On('update-step-backup')]
+    public function stepBackup(): void
     {
         $this->currentStep = 'backup';
         $this->progress = 10;
         $this->addLog('info', $this->steps['backup']);
 
         try {
-            $result = $this->createDatabaseBackup();
+            $result = $this->createFullBackup();
             if ($result) {
-                $this->addLog('success', "Backup criado: {$result}");
+                $size = round(filesize(storage_path('backups/' . $result)) / 1024 / 1024, 2);
+                $this->addLog('success', "Backup completo criado: {$result} ({$size} MB)");
             } else {
-                $this->addLog('warning', 'Backup falhou, mas continuando...');
+                $this->addLog('warning', 'Backup completo falhou, tentando só BD...');
+                $sqlResult = $this->createDatabaseBackup();
+                if ($sqlResult) {
+                    $this->addLog('success', "Backup BD criado: {$sqlResult}");
+                } else {
+                    $this->addLog('warning', 'Backup falhou, mas continuando...');
+                }
             }
         } catch (\Exception $e) {
             $this->addLog('warning', 'Erro no backup: ' . $e->getMessage());
             $this->addLog('info', 'Continuando sem backup...');
         }
 
-        $this->stepPull();
+        $this->dispatch('update-step-pull');
     }
 
-    private function stepPull(): void
+    #[On('update-step-pull')]
+    public function stepPull(): void
     {
         $this->currentStep = 'pulling';
         $this->progress = 25;
@@ -368,15 +379,11 @@ class UpdaterSpa extends Component
                 }
             }
 
-            // Try to restore local-only changes (non-conflicting)
-            $pop = Process::path($basePath)->run('git stash pop 2>&1');
-            if ($pop->successful() && !str_contains($pop->output(), 'No stash entries')) {
-                $this->addLog('info', 'Alterações locais restauradas');
-            } elseif (str_contains($pop->output(), 'CONFLICT') || str_contains($pop->output(), 'error')) {
-                // Conflicts — drop stash, remote wins
-                Process::path($basePath)->run('git checkout -- . 2>&1');
+            // Descartar stash — código remoto prevalece sempre
+            $stashList = Process::path($basePath)->run('git stash list 2>&1');
+            if (!empty(trim($stashList->output()))) {
                 Process::path($basePath)->run('git stash drop 2>&1');
-                $this->addLog('info', 'Conflitos de stash resolvidos (código remoto prevalece)');
+                $this->addLog('info', 'Stash local descartado (código remoto prevalece)');
             }
 
             // Update version.txt
@@ -390,10 +397,11 @@ class UpdaterSpa extends Component
             return;
         }
 
-        $this->stepComposer();
+        $this->dispatch('update-step-composer');
     }
 
-    private function stepComposer(): void
+    #[On('update-step-composer')]
+    public function stepComposer(): void
     {
         $this->currentStep = 'composer';
         $this->progress = 50;
@@ -425,10 +433,11 @@ class UpdaterSpa extends Component
             $this->addLog('info', 'Continuando sem atualizar dependências...');
         }
 
-        $this->stepMigrations();
+        $this->dispatch('update-step-migrations');
     }
 
-    private function stepMigrations(): void
+    #[On('update-step-migrations')]
+    public function stepMigrations(): void
     {
         $this->currentStep = 'migrations';
         $this->progress = 70;
@@ -454,10 +463,11 @@ class UpdaterSpa extends Component
             $this->addLog('warning', 'Pode ser necessário executar manualmente');
         }
 
-        $this->stepCache();
+        $this->dispatch('update-step-cache');
     }
 
-    private function stepCache(): void
+    #[On('update-step-cache')]
+    public function stepCache(): void
     {
         $this->currentStep = 'cache';
         $this->progress = 85;
@@ -470,10 +480,11 @@ class UpdaterSpa extends Component
             $this->addLog('warning', 'Erro ao limpar cache: ' . $e->getMessage());
         }
 
-        $this->stepComplete();
+        $this->dispatch('update-step-complete');
     }
 
-    private function stepComplete(): void
+    #[On('update-step-complete')]
+    public function stepComplete(): void
     {
         $this->currentStep = 'complete';
         $this->progress = 100;
@@ -687,6 +698,14 @@ class UpdaterSpa extends Component
 
     public function restoreBackup(string $filename): void
     {
+        // Segurança: prevenir path traversal
+        $filename = basename($filename);
+        if (!preg_match('/^backup_[\d_-]+\.(sql|zip)$/', $filename)) {
+            $this->addLog('error', 'Nome de ficheiro inválido!');
+            $this->dispatch('toast', type: 'error', message: 'Nome de ficheiro inválido');
+            return;
+        }
+
         $backupFilePath = storage_path('backups/' . $filename);
 
         if (!file_exists($backupFilePath)) {
@@ -723,7 +742,7 @@ class UpdaterSpa extends Component
                     if (!file_exists($sqlFile)) {
                         $this->addLog('error', 'Ficheiro SQL não encontrado dentro do zip');
                         $this->dispatch('toast', type: 'error', message: 'SQL não encontrado no backup');
-                        @rmdir($tmpDir);
+                        $this->removeDirectory($tmpDir);
                         return;
                     }
 
@@ -786,6 +805,13 @@ class UpdaterSpa extends Component
 
     public function deleteBackup(string $filename): void
     {
+        // Segurança: prevenir path traversal
+        $filename = basename($filename);
+        if (!preg_match('/^backup_[\d_-]+\.(sql|zip)$/', $filename)) {
+            $this->dispatch('toast', type: 'error', message: 'Nome de ficheiro inválido');
+            return;
+        }
+
         $path = storage_path('backups/' . $filename);
         if (file_exists($path)) {
             unlink($path);
@@ -826,8 +852,11 @@ class UpdaterSpa extends Component
             if ($result->successful()) {
                 $this->addLog('success', 'Código revertido com sucesso!');
 
-                // Pop stash if exists
-                Process::path(base_path())->run('git stash pop 2>&1');
+                // Pop stash only if exists
+                $stashList = Process::path(base_path())->run('git stash list 2>&1');
+                if (!empty(trim($stashList->output()))) {
+                    Process::path(base_path())->run('git stash pop 2>&1');
+                }
 
                 // Clear cache
                 Artisan::call('optimize:clear');
@@ -998,11 +1027,24 @@ class UpdaterSpa extends Component
             'Memória' => ini_get('memory_limit'),
             'Max Exec Time' => ini_get('max_execution_time') . 's',
             'Upload Max' => ini_get('upload_max_filesize'),
-            'Disco Livre' => round(disk_free_space(base_path()) / 1024 / 1024 / 1024, 2) . ' GB',
+            'Disco Livre' => $this->getSafeDiskFree(),
         ];
 
         return view('livewire.admin.system.updater-spa', [
             'systemInfo' => $systemInfo,
         ]);
+    }
+
+    private function getSafeDiskFree(): string
+    {
+        try {
+            $bytes = @disk_free_space(base_path());
+            if ($bytes === false) {
+                return 'N/A';
+            }
+            return round($bytes / 1024 / 1024 / 1024, 2) . ' GB';
+        } catch (\Exception $e) {
+            return 'N/A';
+        }
     }
 }
